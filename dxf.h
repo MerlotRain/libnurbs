@@ -173,20 +173,19 @@ void write_view(dxf_document_t *doc, dxf_write_t *w);
 void write_ucs(dxf_document_t *doc, dxf_write_t *w);
 void write_dim_style(dxf_document_t *doc, dxf_write_t *w, double dimasz,
                      double dimexe, double dimexo, double dimgap, double dimtxt,
-                     int dimtad = 1, bool dimtih = false);
-void write_block_record(dxf_document_t *doc, dxf_write_t *w);
+                     int dimtad, bool dimtih);
 void write_block_record(dxf_document_t *doc, dxf_write_t *w, const char *name);
 void write_objects(dxf_document_t *doc, dxf_write_t *w,
-                   const char *appDictionaryName = "");
+                   const char *appDictionaryName);
 void write_app_dictionary(dxf_document_t *doc, dxf_write_t *w);
 unsigned long write_dictionary_entry(dxf_document_t *doc, dxf_write_t *w,
                                      const char *name);
-void write_x_record(dxf_document_t *doc, dxf_write_t *w, int handle, int value);
-void write_x_record(dxf_document_t *doc, dxf_write_t *w, int handle,
+void write_x_record_int(dxf_document_t *doc, dxf_write_t *w, int handle, int value);
+void write_x_record_double(dxf_document_t *doc, dxf_write_t *w, int handle,
                     double value);
-void write_x_record(dxf_document_t *doc, dxf_write_t *w, int handle,
+void write_x_record_boolean(dxf_document_t *doc, dxf_write_t *w, int handle,
                     bool value);
-void write_x_record(dxf_document_t *doc, dxf_write_t *w, int handle,
+void write_x_record_string(dxf_document_t *doc, dxf_write_t *w, int handle,
                     const char *value);
 void write_objects_end(dxf_document_t *doc, dxf_write_t *w);
 

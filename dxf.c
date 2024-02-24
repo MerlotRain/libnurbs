@@ -292,17 +292,17 @@ unsigned long write_dictionary_entry(dxf_document_t *doc, dxf_write_t *w,
   return 0;
 }
 
-void write_x_record(dxf_document_t *doc, dxf_write_t *w, int handle,
-                    int value) {}
+void write_x_record_int(dxf_document_t *doc, dxf_write_t *w, int handle,
+                        int value) {}
 
-void write_x_record(dxf_document_t *doc, dxf_write_t *w, int handle,
-                    double value) {}
+void write_x_record_double(dxf_document_t *doc, dxf_write_t *w, int handle,
+                           double value) {}
 
-void write_x_record(dxf_document_t *doc, dxf_write_t *w, int handle,
-                    bool value) {}
+void write_x_record_bool(dxf_document_t *doc, dxf_write_t *w, int handle,
+                         bool value) {}
 
-void write_x_record(dxf_document_t *doc, dxf_write_t *w, int handle,
-                    const char *value) {}
+void write_x_record_string(dxf_document_t *doc, dxf_write_t *w, int handle,
+                           const char *value) {}
 
 void write_objects_end(dxf_document_t *doc, dxf_write_t *w) {}
 

@@ -363,7 +363,7 @@ typedef struct dxf_insert_data {
   double sz;
   /*! Rotation angle in degrees. */
   double angle;
-  /*! Number of colums if we insert an array of the block or 1. */
+  /*! Number of columns if we insert an array of the block or 1. */
   int cols;
   /*! Number of rows if we insert an array of the block or 1. */
   int rows;
@@ -384,11 +384,11 @@ typedef struct dxf_mText_data {
   /*! Z Coordinate of insertion point. */
   double ipz;
   /*! X Coordinate of X direction vector. */
-  double dirx;
+  double dirX;
   /*! Y Coordinate of X direction vector. */
-  double diry;
+  double dirY;
   /*! Z Coordinate of X direction vector. */
-  double dirz;
+  double dirZ;
   /*! Text height */
   double height;
   /*! Width of the text box. */
@@ -537,7 +537,7 @@ typedef struct dxf_arc_aligned_text_data {
   /*! Underline flag */
   bool underline;
   /*! Character set value. Windows character set identifier. */
-  int characerSet;
+  int characterSet;
   /*! Pitch and family value. Windows pitch and character family identifier. */
   int pitch;
   /*! Font type:
@@ -649,7 +649,7 @@ typedef struct dxf_dimension_data {
    */
   double linearFactor;
   /**
-   * Dimension scale (dimscale) style override.
+   * Dimension scale (dimScale) style override.
    */
   double dimScale;
   bool arrow1Flipped;
@@ -830,7 +830,7 @@ typedef struct dxf_leader_data {
   double textAnnotationWidth;
   /*! Number of vertices in leader (76). */
   int number;
-  /*! Dimension scale (dimscale) style override. */
+  /*! Dimension scale (dimScale) style override. */
   double dimScale;
 } dxf_leader_data;
 

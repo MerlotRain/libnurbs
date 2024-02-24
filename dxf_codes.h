@@ -361,7 +361,7 @@ const double dxfColors[][3] = {
 #define DL_ATTFLAGS_CODE 70
 #define DL_PLINE_FLAGS_CODE 70
 #define DL_LAYER_FLAGS_CODE 70
-#define DL_FLD_LEN_CODE 73 // Inside ATTRIB resbuf
+#define DL_FLD_LEN_CODE 73 // Inside ATTRIB
 #define DL_LAST_INT_CODE 79
 #define DL_X_EXTRU_CODE 210
 #define DL_Y_EXTRU_CODE 220
@@ -387,11 +387,11 @@ const double dxfColors[][3] = {
 
 // Some codes used by circle entities
 #define DL_CENTER_CODE 10 // Followed by x of center
-#define DL_RADIUS_CODE 40 // Followd by radius of circle
+#define DL_RADIUS_CODE 40 // Followed by radius of circle
 
-#define DL_COND_OP_CODE -4 // Conditional op,ads_ssget
+#define DL_COND_OP_CODE -4 // Conditional op,ads_sgetn
 
-// When using ads_buildlist you MUST use RTDXF0 instead of these
+// When using ads_build's you MUST use RTDXF0 instead of these
 #define DL_ENTITY_TYPE_CODE 0 // Then there is LINE, 3DFACE..
 #define DL_SES_CODE 0         // Start End String Code
 #define DL_FILE_SEP_CODE 0    // File separator
@@ -400,7 +400,7 @@ const double dxfColors[][3] = {
 #define DL_NAME_CODE 2
 #define DL_BLOCK_NAME_CODE 2
 #define DL_SECTION_NAME_CODE 2
-#define DL_ENT_HAND_CODE 5      // What follows is hexa string
+#define DL_ENT_HAND_CODE 5      // What follows is hex string
 #define DL_TXT_STYLE_CODE 7     // Inside attributes
 #define DL_LAYER_NAME_CODE 8    // What follows is layer name
 #define DL_FIRST_XCOORD_CODE 10 // Group code x of 1st coord
@@ -412,7 +412,7 @@ const double dxfColors[][3] = {
 #define DL_SCALE_X_CODE 41
 #define DL_SCALE_Y_CODE 42
 #define DL_SCALE_Z_CODE 43
-#define DL_BULGE_CODE 42 // Used in PLINE verts for arcs
+#define DL_BULGE_CODE 42 // Used in PLINE vertex's for arcs
 #define DL_ROTATION_CODE 50
 #define DL_COLOUR_CODE 62 // What follows is a color int
 #define DL_LTYPE_CODE 6   // What follows is a linetype
