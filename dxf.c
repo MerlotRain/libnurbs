@@ -118,7 +118,33 @@ void destroy_write(dxf_write_t *w) {}
 /* -------------------------------------------------------------------------- */
 /*                             dxf write function                             */
 /* -------------------------------------------------------------------------- */
-void write_dxf_real(dxf_write_t *w, int gc, double value) {}
+void write_dxf_real(dxf_write_t *w, int gc, double value) {
+  char str[256];
+  if(w->version == AC1009_MIN) {
+    sprintf(str, "%.6lf", value);
+  }
+  else {
+    sprintf(str, "%.16f", value);
+  }
+  str_replace(str, ',','.');
+      bool dot = false;
+    int end = -1;
+    for (unsigned int i=0; i<strlen(str); ++i) {
+        if (str[i]=='.') {
+            dot = true;
+            end = i+2;
+            continue;
+        } else if (dot && str[i]!='0') {
+            end = i+1;
+        }
+    }
+    if (end>0 && end<(int)strlen(str)) {
+    str[end] = '\0';
+  }
+  
+  dxfString(gc, str);
+  m_ofile.flush();
+} 
 
 void write_dxf_int(dxf_write_t *w, int gc, int value) {}
 
