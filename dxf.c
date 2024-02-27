@@ -146,7 +146,9 @@ void write_dxf_real(dxf_write_t *w, int gc, double value) {
   m_ofile.flush();
 } 
 
-void write_dxf_int(dxf_write_t *w, int gc, int value) {}
+void write_dxf_int(dxf_write_t *w, int gc, int value) {
+  char str[256];
+}
 
 void write_dxf_bool(dxf_write_t *w, int gc, bool value) {}
 
