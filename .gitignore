@@ -52,3 +52,5 @@ Mkfile.old
 dkms.conf
 
 # VSCode
+build
+.cache
