@@ -53,6 +53,12 @@
     "limits": "cpp",
     "tuple": "cpp",
     "cstddef": "cpp",
-    "cmath": "cpp"
-  }
+    "cmath": "cpp",
+    "__locale": "c",
+    "system_error": "c",
+    "typeinfo": "c",
+    "locale": "c",
+    "referenced": "c"
+  },
+  "comment-divider.length": 90
 }

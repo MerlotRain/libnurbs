@@ -3,7 +3,7 @@ BasedOnStyle: LLVM
 AlignConsecutiveAssignments: true
 AlignConsecutiveMacros: true
 AlignConsecutiveDeclarations: true
-ColumnLimit: 80
+ColumnLimit: 90
 IndentWidth: 4
 IndentPPDirectives: AfterHash
 BinPackParameters: false
