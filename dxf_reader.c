@@ -6,6 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* --------------------------------- dxf reader struct -------------------------------- */
+typedef struct dxf_reader_t {
+    dxf_reader_callback_t interface;
+    dxf_document_t       *doc;
+} dxf_reader_t;
+
+/* ----------------------------- dxf read static functions ---------------------------- */
+
 static dxf_BOOL strip_white_space(dxf_CHAR **s, dxf_BOOL strip_space) {
     dxf_I32 lastChar = strlen(*s) - 1;
 
@@ -59,6 +67,7 @@ process_dxf_group(dxf_reader_callback_t *interface, dxf_U32 group_code, dxf_CHAR
     return FALSE;
 }
 
+/* -------------------------------- dxf read functions -------------------------------- */
 dxf_I32 dxf_read(const dxf_CHAR *file, dxf_reader_callback_t *interface) {
     assert(file && interface);
 

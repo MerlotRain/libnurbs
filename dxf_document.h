@@ -10,9 +10,7 @@
 extern "C" {
 #endif
 
-/* ------------------------------------------------------------------------------------ */
-/*                                      hash table                                      */
-/* ------------------------------------------------------------------------------------ */
+/* ------------------------------------ hash table ------------------------------------ */
 struct hashtab_node {
     void                *key;
     void                *datum;
@@ -40,6 +38,7 @@ void *hashtab_search(struct hash_table *ht, void *key) { return NULL; }
 
 void hashtab_free(struct hash_table *ht) {}
 
+/* -------------------------------- dxf document struct ------------------------------- */
 typedef struct dxf_document_t {
     enum Version version;
 
