@@ -18,9 +18,49 @@ struct dxf_writer_t {
 
 /* ------------------------------- dxf write functions -------------------------------- */
 
-dxf_I32 dxf_create_writer(dxf_writer_t **w, const dxf_CHAR *filename) { return 1; }
+dxf_I32
+dxf_create_writer(dxf_writer_t **w, const dxf_CHAR *filename, enum Version version) {
+    assert(w);
+    assert(filename);
+    *w = (dxf_writer_t *)malloc(sizeof(dxf_writer_t));
+    if (*w = NULL)
+        return DXF_FAILURE;
 
-dxf_I32 dxf_destroy_writer(dxf_writer_t *w) { return 1; }
+    memset(*w, 0, sizeof(dxf_writer_t));
+    dxf_document_t *doc = (dxf_document_t *)malloc(sizeof(dxf_document_t));
+    if (doc == NULL) {
+        dxf_destroy_writer(*w);
+        return DXF_FAILURE;
+    }
+    (*w)->doc = doc;
+
+    FILE *fp = fopen(filename, "w");
+    if (fp == NULL) {
+        dxf_destroy_writer(*w);
+        return DXF_FAILURE;
+    }
+    (*w)->fp                = fp;
+    (*w)->version           = version;
+    (*w)->m_handle          = 0;
+    (*w)->modelSpaceHandle  = 0;
+    (*w)->paperSpace0Handle = 0;
+    (*w)->paperSpace0Handle = 0;
+    return DXF_SUCCESS;
+}
+
+dxf_I32 dxf_destroy_writer(dxf_writer_t *w) {
+    assert(w);
+    if (w->fp) {
+        fclose(w->fp);
+        w->fp = NULL;
+    }
+    if (w->doc) {
+        dxf_destroy_document(w->doc);
+        w->doc = NULL;
+    }
+    free(w);
+    return DXF_SUCCESS;
+}
 
 dxf_I32 dxf_write_real(dxf_writer_t *w, dxf_I32 gc, dxf_F64 value) { return 1; }
 

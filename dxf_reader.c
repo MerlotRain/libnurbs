@@ -12,6 +12,26 @@ typedef struct dxf_reader_t {
     dxf_document_t       *doc;
 } dxf_reader_t;
 
+dxf_reader_t *dxf_create_reader(dxf_reader_callback_t *call_back) {
+    dxf_reader_t *r = (dxf_reader_t *)malloc(sizeof(dxf_reader_t));
+    if (r == NULL)
+        return NULL;
+    dxf_document_t *doc = (dxf_document_t *)malloc(sizeof(dxf_document_t));
+    if (doc == NULL) {
+        dxf_destroy_reader(r);
+        return NULL;
+    }
+    r->interface = *call_back;
+    r->doc       = doc;
+    return r;
+}
+
+void dxf_destroy_reader(dxf_reader_t *r) {
+    assert(r);
+    dxf_destroy_document(r->doc);
+    free(r);
+}
+
 /* ----------------------------- dxf read static functions ---------------------------- */
 
 static dxf_BOOL strip_white_space(dxf_CHAR **s, dxf_BOOL strip_space) {
@@ -69,24 +89,30 @@ process_dxf_group(dxf_reader_callback_t *interface, dxf_U32 group_code, dxf_CHAR
 
 /* -------------------------------- dxf read functions -------------------------------- */
 dxf_I32 dxf_read(const dxf_CHAR *file, dxf_reader_callback_t *interface) {
-    assert(file && interface);
+    assert(file);
+    assert(interface);
+
+    dxf_reader_t *r = dxf_create_reader(interface);
+    if (r == NULL)
+        return DXF_FAILURE;
 
     FILE *fp = fopen(file, "w");
-    if (fp) {
-        while (!feof(fp)) {
-            dxf_CHAR code[DL_DXF_MAX_LINE]  = {0};
-            dxf_CHAR value[DL_DXF_MAX_LINE] = {0};
+    if (fp == NULL)
+        return DXF_FAILURE;
 
-            if (get_stripped_line(code, DL_DXF_MAX_LINE, fp, TRUE) &&
-                get_stripped_line(value, DL_DXF_MAX_LINE, fp, FALSE)) {
-                dxf_U32 group_code = to_int16(code);
+    dxf_CHAR code[DL_DXF_MAX_LINE]  = {0};
+    dxf_CHAR value[DL_DXF_MAX_LINE] = {0};
+    while (!feof(fp)) {
+        if (get_stripped_line(code, DL_DXF_MAX_LINE, fp, TRUE) &&
+            get_stripped_line(value, DL_DXF_MAX_LINE, fp, FALSE)) {
+            dxf_U32 group_code = to_int16(code);
 
-                interface->process_code_value_pair(group_code, value);
+            interface->process_code_value_pair(group_code, value);
 
-                process_dxf_group(interface, group_code, value);
-            }
-        };
-    }
-
-    return FALSE;
+            process_dxf_group(interface, group_code, value);
+            memset(code, 0, DL_DXF_MAX_LINE);
+            memset(value, 0, DL_DXF_MAX_LINE);
+        }
+    };
+    return DXF_SUCCESS;
 }

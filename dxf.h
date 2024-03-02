@@ -50,8 +50,10 @@ typedef double             dxf_F64;
 typedef void              *dxf_POINTER;
 #endif
 
-#define FALSE 0
-#define TRUE  1
+#define FALSE       0
+#define TRUE        1
+#define DXF_FAILURE -1
+#define DXF_SUCCESS 1
 
 #define DL_DXF_MAX_STRING     1024
 #define DL_DXF_MAX_LINE       1024
@@ -861,7 +863,9 @@ typedef struct dxf_dictionary_entry_data {
 
 typedef struct dxf_writer_t dxf_writer_t;
 
-DXF_API dxf_I32 dxf_create_writer(dxf_writer_t **w, const dxf_CHAR *filename);
+DXF_API dxf_I32 dxf_create_writer(dxf_writer_t  **w,
+                                  const dxf_CHAR *filename,
+                                  enum Version    version);
 DXF_API dxf_I32 dxf_destroy_writer(dxf_writer_t *w);
 
 /* Must be overwritten by the implementing class to write a real value to the file. */
