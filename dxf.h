@@ -1027,6 +1027,7 @@ typedef struct dxf_reader_t dxf_reader_t;
 
 /* Reader callback. */
 typedef struct dxf_reader_callback_t {
+    void (*process_code_value_pair)(dxf_U32, dxf_CHAR *);
     void (*end_section)();
     void (*add_layer)(dxf_layer_data *);
     void (*add_line_type)(dxf_line_type_data *);
@@ -1106,12 +1107,7 @@ typedef struct dxf_reader_callback_t {
     void (*end_sequence)();
 } dxf_reader_callback_t;
 
-DXF_API dxf_I32 dxf_create_reader(dxf_reader_t **,
-                                  const dxf_CHAR *file,
-                                  dxf_reader_callback_t *);
-DXF_API dxf_I32 dxf_destroy_reader(dxf_reader_t *);
-
-DXF_API dxf_I32 dxf_read(dxf_reader_t *);
+DXF_API dxf_I32 dxf_read(const dxf_CHAR *file, dxf_reader_callback_t *);
 
 #ifdef __cplusplus
 }
