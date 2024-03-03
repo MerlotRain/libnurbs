@@ -1,6 +1,8 @@
 #ifndef DXF_H
 #define DXF_H
 
+#include <dxf_config.h>
+
 #ifdef _WIN32
 #    ifdef DXF_DYN_LINK
 #        ifdef DXF_SOURCE
@@ -49,6 +51,22 @@ typedef float              dxf_F32;
 typedef double             dxf_F64;
 typedef void              *dxf_POINTER;
 #endif
+
+#if defined(WIN32)
+#    define STRCASECMP(a, b)     (_stricmp(a, b))
+#    define STRNCASECMP(a, b, n) (_strnicmp(a, b, n))
+#    define STRCMP(a, b)         (_strcmp(a, b))
+#    define STRNCMP(a, b, n)     (_strncmp(a, b, n))
+#else
+/** Alias for strcasecmp() */
+#    define STRCASECMP(a, b)     (strcasecmp(a, b))
+/** Alias for strncasecmp() */
+#    define STRNCASECMP(a, b, n) (strncasecmp(a, b, n))
+#endif
+/** Alias for strncasecmp() == 0 */
+#define EQUALN(a, b, n) (STRNCASECMP(a, b, n) == 0)
+/** Alias for strcasecmp() == 0 */
+#define EQUAL(a, b) (STRCASECMP(a, b) == 0)
 
 #define FALSE       0
 #define TRUE        1
@@ -870,15 +888,67 @@ DXF_API dxf_I32 dxf_destroy_writer(dxf_writer_t *w);
 
 /* Must be overwritten by the implementing class to write a real value to the file. */
 DXF_API dxf_I32 dxf_write_real(dxf_writer_t *w, dxf_I32 gc, dxf_F64 value);
+
 /* Must be overwritten by the implementing class to write an int value to the file. */
 DXF_API dxf_I32 dxf_write_int(dxf_writer_t *w, dxf_I32 gc, dxf_I32 value);
+
 /* Can be overwritten by the implementing class to write a bool value to the file. */
 DXF_API dxf_I32 dxf_write_boolean(dxf_writer_t *w, dxf_I32 gc, dxf_BOOL value);
+
 /* Must be overwritten by the implementing class to write an int value (hex) to the file.
  */
 DXF_API dxf_I32 dxf_write_hex(dxf_writer_t *w, dxf_I32 gc, dxf_I32 value);
+
 /* Must be overwritten by the implementing class to write a string to the file. */
 DXF_API dxf_I32 dxf_write_string(dxf_writer_t *w, dxf_I32 gc, const dxf_CHAR *value);
+
+/* Generic section for section 'name'. */
+DXF_API dxf_I32 dxf_section(dxf_writer_t *w, const dxf_CHAR *name);
+
+/* Section HEADER 0. */
+DXF_API dxf_I32 dxf_section_header(dxf_writer_t *w);
+
+/* Section TABLES */
+DXF_API dxf_I32 dxf_section_tables(dxf_writer_t *w);
+
+/* Section BLOCKS */
+DXF_API dxf_I32 dxf_section_blocks(dxf_writer_t *w);
+
+/* Section ENTITIES */
+DXF_API dxf_I32 dxf_section_entities(dxf_writer_t *w);
+
+/* Section CLASSES */
+DXF_API dxf_I32 dxf_section_classes(dxf_writer_t *w);
+
+/* Section OBJECTS */
+DXF_API dxf_I32 dxf_section_object(dxf_writer_t *w);
+
+/* End of a section. */
+DXF_API dxf_I32 dxf_section_end(dxf_writer_t *w);
+
+/* Table for layers. */
+DXF_API dxf_I32 dxf_table_layers(dxf_writer_t *w, dxf_I32 num);
+
+/* Table for line types. */
+DXF_API dxf_I32 dxf_table_linetypes(dxf_writer_t *w, dxf_I32 num);
+
+/* Table for application id. */
+DXF_API dxf_I32 dxf_table_appid(dxf_writer_t *w, dxf_I32 num);
+
+/* Table for text style. */
+DXF_API dxf_I32 dxf_table_style(dxf_writer_t *w, dxf_I32 num);
+
+/* End of a table. */
+DXF_API dxf_I32 dxf_table_end(dxf_writer_t *w);
+
+/* End of the DXF file. */
+DXF_API dxf_I32 dxf_EOF(dxf_writer_t *w);
+
+/* Entity. */
+DXF_API dxf_I32 dxf_write_entity(dxf_writer_t *w, const dxf_CHAR *text);
+
+/* Attributes of an entity. */
+DXF_API dxf_I32 dxf_entity_attributes(dxf_writer_t *w, const dxf_attributes *attr);
 
 /* Writes a DXF header to the file currently opened by the given DXF writer object.*/
 DXF_API dxf_I32 dxf_write_header(dxf_writer_t *w);
@@ -887,158 +957,201 @@ DXF_API dxf_I32 dxf_write_header(dxf_writer_t *w);
 DXF_API dxf_I32 dxf_write_point(dxf_writer_t         *w,
                                 const dxf_point_data *data,
                                 const dxf_attributes *attr);
+
 /* Writes a line entity to the file. */
 DXF_API dxf_I32 dxf_write_line(dxf_writer_t         *w,
                                const dxf_line_data  *data,
                                const dxf_attributes *attr);
+
 /* Writes an x line entity to the file. */
 DXF_API dxf_I32 dxf_write_xline(dxf_writer_t         *w,
                                 const dxf_xline_data *data,
                                 const dxf_attributes *attr);
+
 /* Writes a ray entity to the file. */
 DXF_API dxf_I32 dxf_write_ray(dxf_writer_t         *w,
                               const dxf_ray_data   *data,
                               const dxf_attributes *attr);
+
 /* Writes a polyline entity to the file. */
 DXF_API dxf_I32 dxf_write_polyline(dxf_writer_t            *w,
                                    const dxf_polyline_data *data,
                                    const dxf_attributes    *attr);
+
 /* Writes a single vertex of a polyline to the file. */
 DXF_API dxf_I32 dxf_write_vertex(dxf_writer_t *w, const dxf_vertex_data *data);
+
 /* Writes the polyline end. Only needed for DXF R12. */
 DXF_API dxf_I32 dxf_write_polyline_end(dxf_writer_t *w);
+
 /* Writes a spline entity to the file. */
 DXF_API dxf_I32 dxf_write_spline(dxf_writer_t          *w,
                                  const dxf_spline_data *data,
                                  const dxf_attributes  *attr);
+
 /* Writes a single control point of a spline to the file. */
 DXF_API dxf_I32 dxf_write_control_point(dxf_writer_t                 *w,
                                         const dxf_control_point_data *data);
+
 /* Writes a single fit point of a spline to the file. */
 DXF_API dxf_I32 dxf_write_fit_point(dxf_writer_t *w, const dxf_fit_point_data *data);
+
 /* Writes a single knot of a spline to the file. */
 DXF_API dxf_I32 dxf_write_knot(dxf_writer_t *w, const dxf_knot_data *data);
+
 /* Writes a circle entity to the file. */
 DXF_API dxf_I32 dxf_write_circle(dxf_writer_t          *w,
                                  const dxf_circle_data *data,
                                  const dxf_attributes  *attr);
+
 /* Writes an arc entity to the file. */
 DXF_API dxf_I32 dxf_write_arc(dxf_writer_t         *w,
                               const dxf_arc_data   *data,
                               const dxf_attributes *attr);
+
 /* Writes an ellipse entity to the file. */
 DXF_API dxf_I32 dxf_write_ellipse(dxf_writer_t           *w,
                                   const dxf_ellipse_data *data,
                                   const dxf_attributes   *attr);
+
 /* Writes a solid entity to the file. */
 DXF_API dxf_I32 dxf_write_solid(dxf_writer_t         *w,
                                 const dxf_solid_data *data,
                                 const dxf_attributes *attr);
+
 /* Writes a trace entity to the file. */
 DXF_API dxf_I32 dxf_write_trace(dxf_writer_t         *w,
                                 const dxf_trace_data *data,
                                 const dxf_attributes *attr);
+
 /* Writes a 3d face entity to the file. */
 DXF_API dxf_I32 dxf_write_3dFace(dxf_writer_t           *w,
                                  const dxf_3d_face_data *data,
                                  const dxf_attributes   *attr);
+
 /* Writes an insert to the file. */
 DXF_API dxf_I32 dxf_write_insert(dxf_writer_t          *w,
                                  const dxf_insert_data *data,
                                  const dxf_attributes  *attr);
+
 /* Writes a multi text entity to the file. */
 DXF_API dxf_I32 dxf_write_mText(dxf_writer_t         *w,
                                 const dxf_mText_data *data,
                                 const dxf_attributes *attr);
+
 /* Writes a text entity to the file. */
 DXF_API dxf_I32 dxf_write_text(dxf_writer_t         *w,
                                const dxf_text_data  *data,
                                const dxf_attributes *attr);
+
 /* Writes a attribute entity to the file. */
 DXF_API dxf_I32 dxf_write_attribute(dxf_writer_t             *w,
                                     const dxf_attribute_data *data,
                                     const dxf_attributes     *attr);
+
 DXF_API dxf_I32 dxf_write_dim_style_overrides(dxf_writer_t             *w,
                                               const dxf_dimension_data *data);
+
 /* Writes an aligned dimension entity to the file. */
 DXF_API dxf_I32 dxf_write_dim_aligned(dxf_writer_t               *w,
                                       const dxf_dimension_data   *data,
                                       const dxf_dim_aligned_data *edata,
                                       const dxf_attributes       *attr);
+
 /* Writes a linear dimension entity to the file. */
 DXF_API dxf_I32 dxf_write_dim_linear(dxf_writer_t         *w,
                                      dxf_dimension_data   *data,
                                      dxf_dim_linear_data  *edata,
                                      const dxf_attributes *attr);
+
 /* Writes a radial dimension entity to the file. */
 DXF_API dxf_I32 dxf_write_dim_radial(dxf_writer_t              *w,
                                      const dxf_dimension_data  *data,
                                      const dxf_dim_radial_data *edata,
                                      const dxf_attributes      *attr);
+
 /* Writes a diametric dimension entity to the file. */
 DXF_API dxf_I32 dxf_write_dim_diametric(dxf_writer_t                 *w,
                                         const dxf_dimension_data     *data,
                                         const dxf_dim_diametric_data *edata,
                                         const dxf_attributes         *attr);
+
 /* Writes an angular dimension entity to the file. */
 DXF_API dxf_I32 dxf_write_dim_angular2L(dxf_writer_t                 *w,
                                         const dxf_dimension_data     *data,
                                         const dxf_dim_angular2L_data *edata,
                                         const dxf_attributes         *attr);
+
 /* Writes an angular dimension entity (3 points version) to the file. */
 DXF_API dxf_I32 dxf_write_dim_angular3P(dxf_writer_t                 *w,
                                         const dxf_dimension_data     *data,
                                         const dxf_dim_angular3P_data *edata,
                                         const dxf_attributes         *attr);
+
 /* Writes an ordinate dimension entity to the file. */
 DXF_API dxf_I32 dxf_write_dim_ordinate(dxf_writer_t                *w,
                                        const dxf_dimension_data    *data,
                                        const dxf_dim_ordinate_data *edata,
                                        const dxf_attributes        *attr);
+
 /* Writes a leader entity to the file. */
 DXF_API dxf_I32 dxf_write_leader(dxf_writer_t          *w,
                                  const dxf_leader_data *data,
                                  const dxf_attributes  *attr);
+
 /* Writes a single vertex of a leader to the file. */
 DXF_API dxf_I32 dxf_write_leader_vertex(dxf_writer_t                 *w,
                                         const dxf_leader_vertex_data *data);
+
 /* Writes leader end to the file. */
 DXF_API dxf_I32 dxf_write_leader_end(dxf_writer_t *w, const dxf_leader_data *data);
+
 /* Writes the beginning of a hatch entity to the file. This must be followed by one or
  * more writeHatchLoop() calls and a writeHatch2() call.*/
 DXF_API dxf_I32 dxf_write_hatch1(dxf_writer_t         *w,
                                  const dxf_hatch_data *data,
                                  const dxf_attributes *attr);
+
 /* Writes the end of a hatch entity to the file. */
 DXF_API dxf_I32 dxf_write_hatch2(dxf_writer_t         *w,
                                  const dxf_hatch_data *data,
                                  const dxf_attributes *attr);
+
 /* Writes the beginning of a hatch loop to the file. This must happen after writing the
  * beginning of a hatch entity.*/
 DXF_API dxf_I32 dxf_write_hatch_loop1(dxf_writer_t *w, const dxf_hatch_loop_data *data);
+
 /* Writes the end of a hatch loop to the file. */
 DXF_API dxf_I32 dxf_write_hatch_loop2(dxf_writer_t *w, const dxf_hatch_loop_data *data);
+
 /* Writes the beginning of a hatch entity to the file. */
 DXF_API dxf_I32 dxf_write_hatch_edge(dxf_writer_t *w, const dxf_hatch_edge_data *data);
+
 /* Writes an image entity.*/
 DXF_API uint32_t dxf_write_image(dxf_writer_t         *w,
                                  const dxf_image_data *data,
                                  const dxf_attributes *attr);
-/* Writes an image definiition entity. */
+
+/* Writes an image definition entity. */
 DXF_API dxf_I32 dxf_write_image_def(dxf_writer_t         *w,
                                     const dxf_I32         handle,
                                     const dxf_image_data *data);
+
 /* Writes a layer to the file. Layers are stored in the tables section of a DXF file.*/
 DXF_API dxf_I32 dxf_write_layer(dxf_writer_t         *w,
                                 const dxf_layer_data *data,
                                 const dxf_attributes *attr);
+
 /* Writes a line type to the file. Line types are stored in the tables section of a DXF
  * file.*/
 DXF_API dxf_I32 dxf_write_line_type(dxf_writer_t *w, const dxf_line_type_data *data);
+
 /* Writes the APPID section to the DXF file. */
 DXF_API dxf_I32 dxf_write_appid(dxf_writer_t *w, const dxf_CHAR *name);
+
 /* Writes a block's definition (no entities) to the DXF file. */
 DXF_API dxf_I32 dxf_write_block(dxf_writer_t *w, const dxf_block_data *data);
+
 /* Writes a block end. */
 DXF_API dxf_I32 dxf_write_end_block(dxf_writer_t *w, const dxf_CHAR *name);
 
@@ -1046,14 +1159,18 @@ DXF_API dxf_I32 dxf_write_end_block(dxf_writer_t *w, const dxf_CHAR *name);
  * method currently only writes a faked VPORT section to make the file readable by
  * Aut*cad.*/
 DXF_API dxf_I32 dxf_write_view_port(dxf_writer_t *w);
+
 /* Writes a style section. This section is needed in DL_VERSION_R13. */
 DXF_API dxf_I32 dxf_write_style(dxf_writer_t *w, const dxf_style_data *style);
+
 /* Writes a view section. This section is needed in DL_VERSION_R13. Note that this method
  * currently only writes a faked VIEW section to make the file readable by Aut*cad.*/
 DXF_API dxf_I32 dxf_write_view(dxf_writer_t *w);
+
 /* Writes a ucs section. This section is needed in DL_VERSION_R13. Note that this method
  * currently only writes a faked UCS section to make the file readable by Aut*cad.*/
 DXF_API dxf_I32 dxf_write_ucs(dxf_writer_t *w);
+
 /* Writes a dimstyle section. This section is needed in DL_VERSION_R13. Note that this
  * method currently only writes a faked DIMSTYLE section to make the file readable by
  * Aut*cad.*/
@@ -1065,28 +1182,39 @@ DXF_API dxf_I32 dxf_write_dim_style(dxf_writer_t *w,
                                     dxf_F64       dimtxt,
                                     dxf_I32       dimtad,
                                     dxf_BOOL      dimtih);
+
 /* Writes a blockrecord section. This section is needed in DL_VERSION_R13. Note that this
  * method currently only writes a faked BLOCKRECORD section to make the file readable by
  * Aut*cad.*/
 DXF_API dxf_I32 dxf_write_block_record(dxf_writer_t *w, const dxf_CHAR *name);
+
 /* Writes a objects section. This section is needed in DL_VERSION_R13. Note that this
  * method currently only writes a faked OBJECTS section to make the file readable by
  * Aut*cad.*/
-DXF_API dxf_I32  dxf_write_objects(dxf_writer_t *w, const dxf_CHAR *appDictionaryName);
-DXF_API dxf_I32  dxf_write_app_dictionary(dxf_writer_t *w);
+
+DXF_API dxf_I32 dxf_write_objects(dxf_writer_t *w, const dxf_CHAR *appDictionaryName);
+
+DXF_API dxf_I32 dxf_write_app_dictionary(dxf_writer_t *w);
+
 DXF_API uint32_t dxf_write_dictionary_entry(dxf_writer_t *w, const dxf_CHAR *name);
-DXF_API dxf_I32  dxf_write_x_record_int(dxf_writer_t *w, dxf_I32 handle, dxf_I32 value);
+
+DXF_API dxf_I32 dxf_write_x_record_int(dxf_writer_t *w, dxf_I32 handle, dxf_I32 value);
+
 DXF_API dxf_I32 dxf_write_x_record_double(dxf_writer_t *w, dxf_I32 handle, dxf_F64 value);
+
 DXF_API dxf_I32 dxf_write_x_record_BOOLean(dxf_writer_t *w,
                                            dxf_I32       handle,
                                            dxf_BOOL      value);
+
 DXF_API dxf_I32 dxf_write_x_record_string(dxf_writer_t   *w,
                                           dxf_I32         handle,
                                           const dxf_CHAR *value);
+
 /* Writes the end of the objects section. This section is needed in DL_VERSION_R13. Note
  * that this method currently only writes a faked OBJECTS section to make the file
  * readable by Aut*cad.*/
 DXF_API dxf_I32 dxf_write_objects_end(dxf_writer_t *w);
+
 /* Writes a comment to the DXF file. */
 DXF_API dxf_I32 dxf_write_comment(dxf_writer_t *w, const dxf_CHAR *comment);
 
@@ -1097,7 +1225,7 @@ DXF_API dxf_I32 dxf_write_comment(dxf_writer_t *w, const dxf_CHAR *comment);
 /* Reader callback. */
 typedef struct dxf_reader_callback_t {
     /* Called for every code / value tuple of the DXF file. The complete DXF file contents
-     * can be handled by the implemetation of this function.*/
+     * can be handled by the implementation of this function.*/
     void (*process_code_value_pair)(dxf_U32, dxf_CHAR *);
     /* Called when a section (entity, table entry, etc.) is finished. */
     void (*end_section)();
@@ -1153,7 +1281,7 @@ typedef struct dxf_reader_callback_t {
     /* Called for additional text chunks for MTEXT entities. The chunks come at 250
      * character in size each. Note that those chunks come <b>before</b> the actual MTEXT
      * entity. */
-    void (*add_mText_chunk)(const const dxf_CHAR *);
+    void (*add_mText_chunk)(const dxf_CHAR *);
     /* Called for every text entity. */
     void (*add_text)(const dxf_text_data *);
     /* Called for every arc aligned text entity. */

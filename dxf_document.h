@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -125,7 +126,7 @@ void dxf_destroy_document(dxf_document_t *doc) {
 #define FREE_POINTER(x)                                                                  \
     if (doc->x) {                                                                        \
         free(doc->x);                                                                    \
-        doc->x = NULL;                                                                   \
+        doc->x = 0;                                                                      \
     }
 
     FREE_POINTER(vertices)

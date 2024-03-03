@@ -12,6 +12,12 @@ typedef struct dxf_reader_t {
     dxf_document_t       *doc;
 } dxf_reader_t;
 
+void dxf_destroy_reader(dxf_reader_t *r) {
+    assert(r);
+    dxf_destroy_document(r->doc);
+    free(r);
+}
+
 dxf_reader_t *dxf_create_reader(dxf_reader_callback_t *call_back) {
     dxf_reader_t *r = (dxf_reader_t *)malloc(sizeof(dxf_reader_t));
     if (r == NULL)
@@ -24,12 +30,6 @@ dxf_reader_t *dxf_create_reader(dxf_reader_callback_t *call_back) {
     r->interface = *call_back;
     r->doc       = doc;
     return r;
-}
-
-void dxf_destroy_reader(dxf_reader_t *r) {
-    assert(r);
-    dxf_destroy_document(r->doc);
-    free(r);
 }
 
 /* ----------------------------- dxf read static functions ---------------------------- */

@@ -1,7 +1,10 @@
 {
   "cSpell.words": [
+    "ACADMAINTVER",
+    "ACADVER",
     "ARCALIGNEDTEXT",
     "ATTFLAGS",
+    "blockrecord",
     "CONTROLPOINT",
     "CRDGRP",
     "DFACE",
@@ -9,6 +12,7 @@
     "dimexe",
     "dimexo",
     "dimgap",
+    "DIMSTYLE",
     "dimtad",
     "dimtih",
     "dimtxt",
@@ -18,6 +22,7 @@
     "ERLGRP",
     "ESTRGRP",
     "EXTD",
+    "EXTMIN",
     "EXTRU",
     "hashtab",
     "Hookline",
@@ -40,6 +45,7 @@
     "TEXTVAL",
     "TXTHI",
     "VERTS",
+    "VPORT",
     "XCOORD",
     "xline",
     "XRECORD",
@@ -49,6 +55,9 @@
     "ZCOORD"
   ],
   "files.associations": {
+    "*.cjson": "jsonc",
+    "*.wxss": "css",
+    "*.wxs": "javascript",
     "type_traits": "cpp",
     "limits": "cpp",
     "tuple": "cpp",
@@ -58,7 +67,9 @@
     "system_error": "c",
     "typeinfo": "c",
     "locale": "c",
-    "referenced": "c"
+    "referenced": "c",
+    "*.in": "c",
+    "dxf_config.h": "c"
   },
   "comment-divider.length": 90
 }
