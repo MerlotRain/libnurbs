@@ -930,7 +930,7 @@ DXF_API dxf_I32 dxf_section_end(dxf_writer_t *w);
 DXF_API dxf_I32 dxf_table_layers(dxf_writer_t *w, dxf_I32 num);
 
 /* Table for line types. */
-DXF_API dxf_I32 dxf_table_linetypes(dxf_writer_t *w, dxf_I32 num);
+DXF_API dxf_I32 dxf_table_line_types(dxf_writer_t *w, dxf_I32 num);
 
 /* Table for application id. */
 DXF_API dxf_I32 dxf_table_appid(dxf_writer_t *w, dxf_I32 num);

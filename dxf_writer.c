@@ -162,6 +162,7 @@ dxf_I32 dxf_write_string(dxf_writer_t *w, dxf_I32 gc, const dxf_CHAR *value) {
     char   buf[2] = {0};
     memset(buf, ' ', size);
     fprintf(w->fp, "%s%d\n%s\n", buf, gc, value);
+    return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_section(dxf_writer_t *w, const dxf_CHAR *name) {
@@ -186,7 +187,7 @@ dxf_I32 dxf_section_end(dxf_writer_t *w) { return dxf_section(w, "ENDSEC"); }
 
 dxf_I32 dxf_table_layers(dxf_writer_t *w, dxf_I32 num) { return DXF_SUCCESS; }
 
-dxf_I32 dxf_table_linetypes(dxf_writer_t *w, dxf_I32 num) { return DXF_SUCCESS; }
+dxf_I32 dxf_table_line_types(dxf_writer_t *w, dxf_I32 num) { return DXF_SUCCESS; }
 
 dxf_I32 dxf_table_appid(dxf_writer_t *w, dxf_I32 num) { return DXF_SUCCESS; }
 
@@ -216,7 +217,8 @@ dxf_I32 dxf_entity_attributes(dxf_writer_t *w, const dxf_attributes *attr) {
     if (w->version >= DL_VERSION_2000) {
         dxf_write_real(w, 48, attr->line_type_scale);
     }
-    dxf_CHAR *line_type = attr->line_type;
+    dxf_CHAR line_type[512] = {0};
+    memcpy(line_type, attr->line_type, strlen(attr->line_type));
     for (int i = 0; i < strlen(line_type); ++i) {
         line_type[i] = toupper(line_type[i]);
     }
@@ -227,7 +229,7 @@ dxf_I32 dxf_entity_attributes(dxf_writer_t *w, const dxf_attributes *attr) {
 }
 
 dxf_I32 dxf_write_header(dxf_writer_t *w) {
-    dxf_write_comment(w, "dxflib " LIBDXF_VERSION);
+    dxf_write_comment(w, "libdxf " LIBDXF_VERSION);
     return DXF_SUCCESS;
 }
 
@@ -282,7 +284,7 @@ dxf_write_ray(dxf_writer_t *w, const dxf_ray_data *data, const dxf_attributes *a
         dxf_write_string(w, 100, "AcDbEntity");
     }
     dxf_entity_attributes(w, attr);
-    if (w->version = DL_VERSION_2000) {
+    if (w->version == DL_VERSION_2000) {
         dxf_write_string(w, 100, "AcDbLine");
     }
     dxf_coordinate(w, DL_LINE_START_CODE, data->bx, data->by, data->bz);
@@ -305,7 +307,7 @@ dxf_I32 dxf_write_polyline(dxf_writer_t            *w,
         dxf_entity_attributes(w, attr);
         memcpy(w->doc->polylineLayer, attr->layer, strlen(attr->layer));
         dxf_write_int(w, 66, 1);
-        fxf_write_int(w, 70, data->flags);
+        dxf_write_int(w, 70, data->flags);
         dxf_coordinate(w, DL_VERTEX_COORD_CODE, 0.0, 0.0, 0.0);
     }
     return DXF_SUCCESS;
@@ -377,55 +379,242 @@ dxf_I32 dxf_write_knot(dxf_writer_t *w, const dxf_knot_data *data) {
 dxf_I32 dxf_write_circle(dxf_writer_t          *w,
                          const dxf_circle_data *data,
                          const dxf_attributes  *attr) {
+    dxf_write_entity(w, "CIRCLE");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbCircle");
+    }
+    dxf_coordinate(w, 10, data->cx, data->cy, data->cz);
+    dxf_write_real(w, 40, data->radius);
     return DXF_SUCCESS;
 }
 
 dxf_I32
 dxf_write_arc(dxf_writer_t *w, const dxf_arc_data *data, const dxf_attributes *attr) {
+    dxf_write_entity(w, "ARC");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbCircle");
+    }
+    dxf_coordinate(w, 10, data->cx, data->cy, data->cz);
+    dxf_write_real(w, 40, data->radius);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbArc");
+    }
+    dxf_write_real(w, 50, data->angle1);
+    dxf_write_real(w, 51, data->angle2);
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_ellipse(dxf_writer_t           *w,
                           const dxf_ellipse_data *data,
                           const dxf_attributes   *attr) {
+    if (w->version > DL_VERSION_R12) {
+        dxf_write_entity(w, "ELLIPSE");
+        if (w->version == DL_VERSION_2000) {
+            dxf_write_string(w, 100, "AcDbEntity");
+        }
+        dxf_entity_attributes(w, attr);
+        if (w->version == DL_VERSION_2000) {
+            dxf_write_string(w, 100, "AcDbEllipse");
+        }
+        dxf_coordinate(w, 10, data->cx, data->cy, data->cz);
+        dxf_coordinate(w, 11, data->mx, data->my, data->mz);
+        dxf_write_real(w, 40, data->ratio);
+        dxf_write_real(w, 41, data->angle1);
+        dxf_write_real(w, 42, data->angle2);
+    }
     return DXF_SUCCESS;
 }
 
 dxf_I32
 dxf_write_solid(dxf_writer_t *w, const dxf_solid_data *data, const dxf_attributes *attr) {
+    dxf_write_entity(w, "SOLID");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbTrace");
+    }
+    dxf_coordinate(w, 10, data->x[0], data->y[0], data->z[0]);
+    dxf_coordinate(w, 11, data->x[1], data->y[1], data->z[1]);
+    dxf_coordinate(w, 12, data->x[2], data->y[2], data->z[2]);
+    dxf_coordinate(w, 13, data->x[3], data->y[3], data->z[3]);
+    dxf_write_real(w, 39, data->thickness);
     return DXF_SUCCESS;
 }
 
 dxf_I32
 dxf_write_trace(dxf_writer_t *w, const dxf_trace_data *data, const dxf_attributes *attr) {
+    dxf_write_entity(w, "TRACE");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbTrace");
+    }
+    dxf_coordinate(w, 10, data->x[0], data->y[0], data->z[0]);
+    dxf_coordinate(w, 11, data->x[1], data->y[1], data->z[1]);
+    dxf_coordinate(w, 12, data->x[2], data->y[2], data->z[2]);
+    dxf_coordinate(w, 13, data->x[3], data->y[3], data->z[3]);
+    dxf_write_real(w, 39, data->thickness);
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_3dFace(dxf_writer_t           *w,
                          const dxf_3d_face_data *data,
                          const dxf_attributes   *attr) {
+    dxf_write_entity(w, "3DFACE");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbFace");
+    }
+    dxf_coordinate(w, 10, data->x[0], data->y[0], data->z[0]);
+    dxf_coordinate(w, 11, data->x[1], data->y[1], data->z[1]);
+    dxf_coordinate(w, 12, data->x[2], data->y[2], data->z[2]);
+    dxf_coordinate(w, 13, data->x[3], data->y[3], data->z[3]);
+    dxf_write_real(w, 39, data->thickness);
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_insert(dxf_writer_t          *w,
                          const dxf_insert_data *data,
                          const dxf_attributes  *attr) {
+    if (strlen(data->name) == 0) {
+        fprintf(stderr, "dxf_write_insert: Block name must not be empty\n");
+        return DXF_FAILURE;
+    }
+
+    dxf_write_entity(w, "INSERT");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        if (data->cols != 1 || data->rows != 1) {
+            dxf_write_string(w, 100, "AcDbInsertBlock");
+        } else {
+            dxf_write_string(w, 100, "AcDbBlockReference");
+        }
+    }
+    dxf_write_string(w, 2, data->name);
+    dxf_write_real(w, 10, data->ipx);
+    dxf_write_real(w, 20, data->ipy);
+    dxf_write_real(w, 30, data->ipz);
+    if (data->sx != 1.0 || data->sy != 1.0) {
+        dxf_write_real(w, 41, data->sx);
+        dxf_write_real(w, 42, data->sy);
+        dxf_write_real(w, 43, 1.0);
+    }
+    if (data->angle != 0.0) {
+        dxf_write_real(w, 50, data->angle);
+    }
+    if (data->cols != 1 || data->rows != 1) {
+        dxf_write_int(w, 70, data->cols);
+        dxf_write_int(w, 71, data->rows);
+    }
+    if (data->colSp != 0.0 || data->rowSp != 0.0) {
+        dxf_write_real(w, 44, data->colSp);
+        dxf_write_real(w, 45, data->rowSp);
+    }
     return DXF_SUCCESS;
 }
 
 dxf_I32
 dxf_write_mText(dxf_writer_t *w, const dxf_mText_data *data, const dxf_attributes *attr) {
+    dxf_write_entity(w, "MTEXT");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbMText");
+    }
+    dxf_write_real(w, 10, data->ipx);
+    dxf_write_real(w, 20, data->ipy);
+    dxf_write_real(w, 30, data->ipz);
+    dxf_write_real(w, 40, data->height);
+    dxf_write_real(w, 41, data->width);
+
+    dxf_write_int(w, 71, data->attachmentPoint);
+    dxf_write_int(w, 72, data->drawingDirection);
+
+    dxf_I32  length     = strlen(data->text);
+    dxf_CHAR chunk[251] = {0};
+    dxf_I32  i;
+    for (i = 250; i < length; i += 250) {
+        strncpy(chunk, &data->text[i - 250], 250);
+        chunk[250] = '\0';
+        dxf_write_string(w, 3, chunk);
+    }
+    strncpy(chunk, &data->text[i - 250], 250);
+    chunk[250] = '\0';
+    dxf_write_string(w, 1, chunk);
+
+    dxf_write_string(w, 7, data->style);
+
+    dxf_write_real(w, 50, data->angle / (2.0 * M_PI) * 360.0);
+    dxf_write_int(w, 73, data->lineSpacingStyle);
+    dxf_write_real(w, 44, data->lineSpacingFactor);
+
     return DXF_SUCCESS;
 }
 
 dxf_I32
 dxf_write_text(dxf_writer_t *w, const dxf_text_data *data, const dxf_attributes *attr) {
+    dxf_write_entity(w, "TEXT");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbText");
+    }
+    dxf_write_real(w, 10, data->ipx);
+    dxf_write_real(w, 20, data->ipy);
+    dxf_write_real(w, 30, data->ipz);
+    dxf_write_real(w, 40, data->height);
+    dxf_write_string(w, 1, data->text);
+    dxf_write_real(w, 50, data->angle / (2.0 * M_PI) * 360.0);
+    dxf_write_real(w, 41, data->xScaleFactor);
+    dxf_write_string(w, 7, data->style);
+
+    dxf_write_int(w, 71, data->textGenerationFlags);
+    dxf_write_int(w, 72, data->hJustification);
+
+    dxf_write_real(w, 11, data->apx);
+    dxf_write_real(w, 21, data->apy);
+    dxf_write_real(w, 31, data->apz);
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbText");
+    }
+    dxf_write_int(w, 73, data->vJustification);
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_attribute(dxf_writer_t             *w,
                             const dxf_attribute_data *data,
                             const dxf_attributes     *attr) {
+    dxf_write_entity(w, "ATTRIB");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbText");
+    }
     return DXF_SUCCESS;
 }
 
