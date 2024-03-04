@@ -619,6 +619,16 @@ dxf_I32 dxf_write_attribute(dxf_writer_t             *w,
 }
 
 dxf_I32 dxf_write_dim_style_overrides(dxf_writer_t *w, const dxf_dimension_data *data) {
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 1001, "ACAD");
+        dxf_write_string(w, 1000, "DSTYLE");
+        dxf_write_string(w, 1002, "{");
+        dxf_write_int(w, 1070, 133);
+        dxf_write_real(w, 1040, data->linearFactor);
+        dxf_write_int(w, 1070, 40);
+        dxf_write_real(w, 1040, data->dimScale);
+        dxf_write_string(w, 1002, "}");
+    }
     return DXF_SUCCESS;
 }
 
@@ -626,6 +636,49 @@ dxf_I32 dxf_write_dim_aligned(dxf_writer_t               *w,
                               const dxf_dimension_data   *data,
                               const dxf_dim_aligned_data *edata,
                               const dxf_attributes       *attr) {
+    dxf_write_entity(w, "DIMENSION");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbDimension");
+    }
+
+    dxf_write_real(w, 10, data->dpx);
+    dxf_write_real(w, 20, data->dpy);
+    dxf_write_real(w, 30, data->dpz);
+
+    dxf_write_real(w, 11, data->mpx);
+    dxf_write_real(w, 21, data->mpy);
+    dxf_write_real(w, 31, 0.0);
+
+    dxf_write_int(w, 70, data->type);
+    if (w->version > DL_VERSION_R12) {
+        dxf_write_int(w, 71, data->attachmentPoint);
+        dxf_write_int(w, 72, data->lineSpacingStyle);
+        dxf_write_real(w, 41, data->lineSpacingFactor);
+    }
+
+    dxf_write_real(w, 42, data->angle);
+
+    dxf_write_string(w, 1, data->text);
+    dxf_write_string(w, 3, "Standard");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbAlignedDimension");
+    }
+
+    dxf_write_real(w, 13, edata->epx1);
+    dxf_write_real(w, 23, edata->epy1);
+    dxf_write_real(w, 33, 0.0);
+
+    dxf_write_real(w, 14, edata->epx2);
+    dxf_write_real(w, 24, edata->epy2);
+    dxf_write_real(w, 34, 0.0);
+
+    dxf_write_dim_style_overrides(w, data);
+
     return DXF_SUCCESS;
 }
 
