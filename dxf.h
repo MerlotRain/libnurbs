@@ -112,7 +112,7 @@ enum Version {
 // Extended color palette:
 // The first entry is only for direct indexing starting with [1]
 // Color 1 is red (1,0,0)
-const dxf_F64 dxfColors[][3] = {
+static const dxf_F64 dxfColors[][3] = {
 #include "dxf_color.inl"
 };
 
@@ -440,10 +440,10 @@ typedef struct dxf_circle_data {
 
 /* Polyline Data. */
 typedef struct dxf_polyline_data {
-    uint32_t number; /* Number of vertices in this polyline. */
-    uint32_t m;      /* Number of vertices in m direction if polyline is a polygon
+    dxf_U32 number; /* Number of vertices in this polyline. */
+    dxf_U32 m;      /* Number of vertices in m direction if polyline is a polygon
                         mesh. */
-    uint32_t n;      /* Number of vertices in n direction if polyline is a polygon
+    dxf_U32 n;      /* Number of vertices in n direction if polyline is a polygon
                         mesh. */
     /* elevation of the polyline. */
     dxf_F64 elevation;
@@ -469,17 +469,17 @@ typedef struct dxf_trace_data {
 
 /* Spline Data. */
 typedef struct dxf_spline_data {
-    uint32_t degree;   /* Degree of the spline curve. */
-    uint32_t nKnots;   /* Number of knots. */
-    uint32_t nControl; /* Number of control points. */
-    uint32_t nFit;     /* Number of fit points. */
-    dxf_I32  flags;    /* Flags */
-    dxf_F64  tangentStartX;
-    dxf_F64  tangentStartY;
-    dxf_F64  tangentStartZ;
-    dxf_F64  tangentEndX;
-    dxf_F64  tangentEndY;
-    dxf_F64  tangentEndZ;
+    dxf_U32 degree;   /* Degree of the spline curve. */
+    dxf_U32 nKnots;   /* Number of knots. */
+    dxf_U32 nControl; /* Number of control points. */
+    dxf_U32 nFit;     /* Number of fit points. */
+    dxf_I32 flags;    /* Flags */
+    dxf_F64 tangentStartX;
+    dxf_F64 tangentStartY;
+    dxf_F64 tangentStartZ;
+    dxf_F64 tangentEndX;
+    dxf_F64 tangentEndY;
+    dxf_F64 tangentEndZ;
 } dxf_spline_data;
 
 /* Spline knot data. */
@@ -820,12 +820,12 @@ typedef struct dxf_hatch_edge_data {
     dxf_F64  mx;      /* Major axis end point (X). */
     dxf_F64  my;      /* Major axis end point (Y). */
     dxf_F64  ratio;   /* Axis ratio */
-    uint32_t degree;  /* Spline degree */
+    dxf_U32  degree;  /* Spline degree */
     dxf_BOOL rational;
     dxf_BOOL periodic;
-    uint32_t nKnots;        /* Number of knots. */
-    uint32_t nControl;      /* Number of control points. */
-    uint32_t nFit;          /* Number of fit points. */
+    dxf_U32  nKnots;        /* Number of knots. */
+    dxf_U32  nControl;      /* Number of control points. */
+    dxf_U32  nFit;          /* Number of fit points. */
     dxf_F64 *controlPoints; /* Coordinate of control points*/
     dxf_F64 *knots;
     dxf_F64 *weights;
@@ -1128,9 +1128,9 @@ DXF_API dxf_I32 dxf_write_hatch_loop2(dxf_writer_t *w, const dxf_hatch_loop_data
 DXF_API dxf_I32 dxf_write_hatch_edge(dxf_writer_t *w, const dxf_hatch_edge_data *data);
 
 /* Writes an image entity.*/
-DXF_API uint32_t dxf_write_image(dxf_writer_t         *w,
-                                 const dxf_image_data *data,
-                                 const dxf_attributes *attr);
+DXF_API dxf_U32 dxf_write_image(dxf_writer_t         *w,
+                                const dxf_image_data *data,
+                                const dxf_attributes *attr);
 
 /* Writes an image definition entity. */
 DXF_API dxf_I32 dxf_write_image_def(dxf_writer_t         *w,
@@ -1196,7 +1196,7 @@ DXF_API dxf_I32 dxf_write_objects(dxf_writer_t *w, const dxf_CHAR *appDictionary
 
 DXF_API dxf_I32 dxf_write_app_dictionary(dxf_writer_t *w);
 
-DXF_API uint32_t dxf_write_dictionary_entry(dxf_writer_t *w, const dxf_CHAR *name);
+DXF_API dxf_U32 dxf_write_dictionary_entry(dxf_writer_t *w, const dxf_CHAR *name);
 
 DXF_API dxf_I32 dxf_write_x_record_int(dxf_writer_t *w, dxf_I32 handle, dxf_I32 value);
 

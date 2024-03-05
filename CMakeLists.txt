@@ -11,11 +11,12 @@ set(LIBDXF_VERSION 1.0.1.0)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/dxf_config.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/dxf_config.h)
 
-add_library(dxf SHARED dxf_reader.c dxf_writer.c)
+add_library(dxf SHARED dxf_reader.c dxf_writer.c dxf_document.c)
 
 if(MSVC)
     target_compile_definitions(dxf PRIVATE DXF_DYN_LINK)
     target_compile_definitions(dxf PRIVATE DXF_SOURCE)
+    target_compile_definitions(dxf PRIVATE _USE_MATH_DEFINES)
 elseif()
 endif()
 

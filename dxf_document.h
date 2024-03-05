@@ -30,17 +30,13 @@ struct hash_table {
 struct hash_table *
 hashtab_create(dxf_U32 (*hash)(struct hash_table *, dxf_POINTER),
                dxf_I32 (*compare)(struct hash_table *, dxf_POINTER, dxf_POINTER),
-               dxf_I32 size) {
-    return NULL;
-}
+               dxf_I32 size);
 
-dxf_I32 hashtab_insert(struct hash_table *ht, dxf_POINTER key, dxf_POINTER datum) {
-    return 0;
-}
+dxf_I32 hashtab_insert(struct hash_table *ht, dxf_POINTER key, dxf_POINTER datum);
 
-dxf_POINTER hashtab_search(struct hash_table *ht, dxf_POINTER key) { return NULL; }
+dxf_POINTER hashtab_search(struct hash_table *ht, dxf_POINTER key);
 
-void hashtab_free(struct hash_table *ht) {}
+void hashtab_free(struct hash_table *ht);
 
 /* ------------------------------------- link list ------------------------------------ */
 
@@ -55,13 +51,13 @@ struct link_list {
     void (*destroy_data)(dxf_POINTER);
 };
 
-struct link_list *list_create(void (*destroy_data)(dxf_POINTER)) { return NULL; }
+struct link_list *list_create(void (*destroy_data)(dxf_POINTER));
 
-void list_free(struct link_list *ls) {}
+void list_free(struct link_list *ls);
 
-void list_insert(struct link_list *ls, dxf_POINTER data, dxf_U32 index) {}
+void list_insert(struct link_list *ls, dxf_POINTER data, dxf_U32 index);
 
-dxf_POINTER list_data(struct link_list *ls, dxf_U32 index) { return NULL; }
+dxf_POINTER list_data(struct link_list *ls, dxf_U32 index);
 
 /* -------------------------------- dxf document struct ------------------------------- */
 typedef struct dxf_document_t {
@@ -121,23 +117,7 @@ typedef struct dxf_document_t {
     dxf_U32 styleHandleStd;
 } dxf_document_t;
 
-void dxf_destroy_document(dxf_document_t *doc) {
-    assert(doc);
-#define FREE_POINTER(x)                                                                  \
-    if (doc->x) {                                                                        \
-        free(doc->x);                                                                    \
-        doc->x = 0;                                                                      \
-    }
-
-    FREE_POINTER(vertices)
-    FREE_POINTER(knots)
-    FREE_POINTER(weights)
-    FREE_POINTER(fitPoints)
-    FREE_POINTER(leaderVertices)
-
-#undef FREE_POINTER
-    free(doc);
-}
+void dxf_destroy_document(dxf_document_t *doc);
 
 #ifdef __cplusplus
 }

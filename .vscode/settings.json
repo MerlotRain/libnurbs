@@ -75,7 +75,10 @@
     "locale": "c",
     "referenced": "c",
     "*.in": "c",
-    "dxf_config.h": "c"
+    "dxf_config.h": "c",
+    "dxf.h": "c",
+    "math.h": "c",
+    "corecrt_math_defines.h": "c"
   },
   "comment-divider.length": 90
 }
