@@ -686,6 +686,55 @@ dxf_I32 dxf_write_dim_linear(dxf_writer_t         *w,
                              dxf_dimension_data   *data,
                              dxf_dim_linear_data  *edata,
                              const dxf_attributes *attr) {
+    dxf_write_entity(w, "DIMENSION");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbDimension");
+    }
+
+    dxf_write_real(w, 10, data->dpx);
+    dxf_write_real(w, 20, data->dpy);
+    dxf_write_real(w, 30, data->dpz);
+
+    dxf_write_real(w, 11, data->mpx);
+    dxf_write_real(w, 21, data->mpy);
+    dxf_write_real(w, 31, 0.0);
+
+    dxf_write_int(w, 70, data->type);
+    if (w->version > DL_VERSION_R12) {
+        dxf_write_int(w, 71, data->attachmentPoint);
+        dxf_write_int(w, 72, data->lineSpacingStyle); // opt
+        dxf_write_int(w, 74, data->arrow1Flipped);
+        dxf_write_int(w, 75, data->arrow2Flipped);
+        dxf_write_real(w, 41, data->lineSpacingFactor); // opt
+    }
+
+    dxf_write_real(w, 42, data->angle);
+    dxf_write_string(w, 1, data->text);
+    dxf_write_string(w, 3, "Standard");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbAlignedDimension");
+    }
+
+    dxf_write_real(w, 13, edata->dpx1);
+    dxf_write_real(w, 23, edata->dpy1);
+    dxf_write_real(w, 33, 0.0);
+
+    dxf_write_real(w, 14, edata->dpx2);
+    dxf_write_real(w, 24, edata->dpy2);
+    dxf_write_real(w, 34, 0.0);
+
+    dxf_write_real(w, 50, edata->angle / (2.0 * M_PI) * 360.0);
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbRotatedDimension");
+    }
+
+    dxf_write_dim_style_overrides(w, data);
     return DXF_SUCCESS;
 }
 
@@ -693,6 +742,51 @@ dxf_I32 dxf_write_dim_radial(dxf_writer_t              *w,
                              const dxf_dimension_data  *data,
                              const dxf_dim_radial_data *edata,
                              const dxf_attributes      *attr) {
+    dxf_write_entity(w, "DIMENSION");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    ;
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbDimension");
+    }
+
+    dxf_write_real(w, 10, data->dpx);
+    dxf_write_real(w, 20, data->dpy);
+    dxf_write_real(w, 30, data->dpz);
+
+    dxf_write_real(w, 11, data->mpx);
+    dxf_write_real(w, 21, data->mpy);
+    dxf_write_real(w, 31, 0.0);
+
+    dxf_write_int(w, 70, data->type);
+    if (w->version > DL_VERSION_R12) {
+        dxf_write_int(w, 71, data->attachmentPoint);
+        dxf_write_int(w, 72, data->lineSpacingStyle); // opt
+        dxf_write_int(w, 74, data->arrow1Flipped);
+        // dxf_write_int(w,75, data->arrow2Flipped);
+        dxf_write_real(w, 41, data->lineSpacingFactor); // opt
+    }
+
+    dxf_write_real(w, 42, data->angle);
+
+    dxf_write_string(w, 1, data->text); // opt
+    // dxf_write_string(w,3, data->style);
+    dxf_write_string(w, 3, "Standard");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbRadialDimension");
+    }
+
+    dxf_write_real(w, 15, edata->dpx);
+    dxf_write_real(w, 25, edata->dpy);
+    dxf_write_real(w, 35, 0.0);
+
+    dxf_write_real(w, 40, edata->leader);
+
+    dxf_write_dim_style_overrides(w, data);
     return DXF_SUCCESS;
 }
 
@@ -700,6 +794,51 @@ dxf_I32 dxf_write_dim_diametric(dxf_writer_t                 *w,
                                 const dxf_dimension_data     *data,
                                 const dxf_dim_diametric_data *edata,
                                 const dxf_attributes         *attr) {
+    dxf_write_entity(w, "DIMENSION");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    ;
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbDimension");
+    }
+
+    dxf_write_real(w, 10, data->dpx);
+    dxf_write_real(w, 20, data->dpy);
+    dxf_write_real(w, 30, data->dpz);
+
+    dxf_write_real(w, 11, data->mpx);
+    dxf_write_real(w, 21, data->mpy);
+    dxf_write_real(w, 31, 0.0);
+
+    dxf_write_int(w, 70, data->type);
+    if (w->version > DL_VERSION_R12) {
+        dxf_write_int(w, 71, data->attachmentPoint);
+        dxf_write_int(w, 72, data->lineSpacingStyle); // opt
+        dxf_write_int(w, 74, data->arrow1Flipped);
+        dxf_write_int(w, 75, data->arrow2Flipped);
+        dxf_write_real(w, 41, data->lineSpacingFactor); // opt
+    }
+
+    dxf_write_real(w, 42, data->angle);
+
+    dxf_write_string(w, 1, data->text); // opt
+    // dxf_write_string(w,3, data->style);
+    dxf_write_string(w, 3, "Standard");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbDiametricDimension");
+    }
+
+    dxf_write_real(w, 15, edata->dpx);
+    dxf_write_real(w, 25, edata->dpy);
+    dxf_write_real(w, 35, 0.0);
+
+    dxf_write_real(w, 40, edata->leader);
+
+    dxf_write_dim_style_overrides(w, data);
     return DXF_SUCCESS;
 }
 
@@ -707,6 +846,59 @@ dxf_I32 dxf_write_dim_angular2L(dxf_writer_t                 *w,
                                 const dxf_dimension_data     *data,
                                 const dxf_dim_angular2L_data *edata,
                                 const dxf_attributes         *attr) {
+    dxf_write_entity(w, "DIMENSION");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    ;
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbDimension");
+    }
+
+    dxf_write_real(w, 10, data->dpx);
+    dxf_write_real(w, 20, data->dpy);
+    dxf_write_real(w, 30, data->dpz);
+
+    dxf_write_real(w, 11, data->mpx);
+    dxf_write_real(w, 21, data->mpy);
+    dxf_write_real(w, 31, 0.0);
+
+    dxf_write_int(w, 70, data->type);
+    if (w->version > DL_VERSION_R12) {
+        dxf_write_int(w, 71, data->attachmentPoint);
+        dxf_write_int(w, 72, data->lineSpacingStyle); // opt
+        dxf_write_int(w, 74, data->arrow1Flipped);
+        dxf_write_int(w, 75, data->arrow2Flipped);
+        dxf_write_real(w, 41, data->lineSpacingFactor); // opt
+    }
+
+    dxf_write_real(w, 42, data->angle);
+
+    dxf_write_string(w, 1, data->text); // opt
+    // dxf_write_string(w,3, data->style);
+    dxf_write_string(w, 3, "Standard");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDb2LineAngularDimension");
+    }
+
+    dxf_write_real(w, 13, edata->dpx1);
+    dxf_write_real(w, 23, edata->dpy1);
+    dxf_write_real(w, 33, 0.0);
+
+    dxf_write_real(w, 14, edata->dpx2);
+    dxf_write_real(w, 24, edata->dpy2);
+    dxf_write_real(w, 34, 0.0);
+
+    dxf_write_real(w, 15, edata->dpx3);
+    dxf_write_real(w, 25, edata->dpy3);
+    dxf_write_real(w, 35, 0.0);
+
+    dxf_write_real(w, 16, edata->dpx4);
+    dxf_write_real(w, 26, edata->dpy4);
+    dxf_write_real(w, 36, 0.0);
     return DXF_SUCCESS;
 }
 
@@ -714,6 +906,55 @@ dxf_I32 dxf_write_dim_angular3P(dxf_writer_t                 *w,
                                 const dxf_dimension_data     *data,
                                 const dxf_dim_angular3P_data *edata,
                                 const dxf_attributes         *attr) {
+    dxf_write_entity(w, "DIMENSION");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    ;
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbDimension");
+    }
+
+    dxf_write_real(w, 10, data->dpx);
+    dxf_write_real(w, 20, data->dpy);
+    dxf_write_real(w, 30, data->dpz);
+
+    dxf_write_real(w, 11, data->mpx);
+    dxf_write_real(w, 21, data->mpy);
+    dxf_write_real(w, 31, 0.0);
+
+    dxf_write_int(w, 70, data->type);
+    if (w->version > DL_VERSION_R12) {
+        dxf_write_int(w, 71, data->attachmentPoint);
+        dxf_write_int(w, 72, data->lineSpacingStyle); // opt
+        dxf_write_int(w, 74, data->arrow1Flipped);
+        dxf_write_int(w, 75, data->arrow2Flipped);
+        dxf_write_real(w, 41, data->lineSpacingFactor); // opt
+    }
+
+    dxf_write_real(w, 42, data->angle);
+
+    dxf_write_string(w, 1, data->text); // opt
+    // dxf_write_string(w,3, data->style);
+    dxf_write_string(w, 3, "Standard");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDb3PointAngularDimension");
+    }
+
+    dxf_write_real(w, 13, edata->dpx1);
+    dxf_write_real(w, 23, edata->dpy1);
+    dxf_write_real(w, 33, 0.0);
+
+    dxf_write_real(w, 14, edata->dpx2);
+    dxf_write_real(w, 24, edata->dpy2);
+    dxf_write_real(w, 34, 0.0);
+
+    dxf_write_real(w, 15, edata->dpx3);
+    dxf_write_real(w, 25, edata->dpy3);
+    dxf_write_real(w, 35, 0.0);
     return DXF_SUCCESS;
 }
 
@@ -721,59 +962,377 @@ dxf_I32 dxf_write_dim_ordinate(dxf_writer_t                *w,
                                const dxf_dimension_data    *data,
                                const dxf_dim_ordinate_data *edata,
                                const dxf_attributes        *attr) {
+    dxf_write_entity(w, "DIMENSION");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    ;
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbDimension");
+    }
+
+    dxf_write_real(w, 10, data->dpx);
+    dxf_write_real(w, 20, data->dpy);
+    dxf_write_real(w, 30, data->dpz);
+
+    dxf_write_real(w, 11, data->mpx);
+    dxf_write_real(w, 21, data->mpy);
+    dxf_write_real(w, 31, 0.0);
+
+    int type = data->type;
+    if (edata->xtype) {
+        type |= 0x40;
+    }
+
+    dxf_write_int(w, 70, type);
+    if (w->version > DL_VERSION_R12) {
+        dxf_write_int(w, 71, data->attachmentPoint);
+        dxf_write_int(w, 72, data->lineSpacingStyle); // opt
+        // dxf_write_int(w,74, data->arrow1Flipped);
+        // dxf_write_int(w,75, data->arrow2Flipped);
+        dxf_write_real(w, 41, data->lineSpacingFactor); // opt
+    }
+
+    dxf_write_string(w, 1, data->text); // opt
+    // dxf_write_string(w,3, data->style);
+    dxf_write_string(w, 3, "Standard");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbOrdinateDimension");
+    }
+
+    dxf_write_real(w, 13, edata->dpx1);
+    dxf_write_real(w, 23, edata->dpy1);
+    dxf_write_real(w, 33, 0.0);
+
+    dxf_write_real(w, 14, edata->dpx2);
+    dxf_write_real(w, 24, edata->dpy2);
+    dxf_write_real(w, 34, 0.0);
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_leader(dxf_writer_t          *w,
                          const dxf_leader_data *data,
                          const dxf_attributes  *attr) {
+    if (w->version > DL_VERSION_R12) {
+        dxf_write_entity(w, "LEADER");
+        if (w->version == DL_VERSION_2000) {
+            dxf_write_string(w, 100, "AcDbEntity");
+        }
+        dxf_entity_attributes(w, attr);
+        ;
+        if (w->version == DL_VERSION_2000) {
+            dxf_write_string(w, 100, "AcDbLeader");
+        }
+        dxf_write_string(w, 3, "Standard");
+        dxf_write_int(w, 71, data->arrowHeadFlag);
+        dxf_write_int(w, 72, data->leaderPathType);
+        dxf_write_int(w, 73, data->leaderCreationFlag);
+        dxf_write_int(w, 74, data->hooklineDirectionFlag);
+        dxf_write_int(w, 75, data->hooklineFlag);
+        dxf_write_real(w, 40, data->textAnnotationHeight);
+        dxf_write_real(w, 41, data->textAnnotationWidth);
+        dxf_write_int(w, 76, data->number);
+    }
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_leader_vertex(dxf_writer_t *w, const dxf_leader_vertex_data *data) {
+    if (w->version > DL_VERSION_R12) {
+        dxf_write_real(w, 10, data->x);
+        dxf_write_real(w, 20, data->y);
+    }
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_leader_end(dxf_writer_t *w, const dxf_leader_data *data) {
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 1001, "ACAD");
+        dxf_write_string(w, 1000, "DSTYLE");
+        dxf_write_string(w, 1002, "{");
+        dxf_write_int(w, 1070, 40);
+        dxf_write_real(w, 1040, data->dimScale);
+        dxf_write_string(w, 1002, "}");
+    }
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_hatch1(dxf_writer_t         *w,
                          const dxf_hatch_data *data,
                          const dxf_attributes *attr) {
+    dxf_write_entity(w, "HATCH");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbHatch");
+    }
+    dxf_write_real(w, 10, 0.0); // elevation
+    dxf_write_real(w, 20, 0.0);
+    dxf_write_real(w, 30, 0.0);
+    dxf_write_real(w, 210, 0.0); // extrusion dir.
+    dxf_write_real(w, 220, 0.0);
+    dxf_write_real(w, 230, 1.0);
+    if (data->solid == FALSE) {
+        dxf_write_string(w, 2, data->pattern);
+    } else {
+        dxf_write_string(w, 2, "SOLID");
+    }
+    dxf_write_int(w, 70, (int)data->solid);
+    dxf_write_int(w, 71, 0); // non-associative
+    dxf_write_int(w, 91, data->numLoops);
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_hatch2(dxf_writer_t         *w,
                          const dxf_hatch_data *data,
                          const dxf_attributes *attr) {
+    dxf_write_int(w, 75, 0); // odd parity
+    dxf_write_int(w, 76, 1); // pattern type
+    if (data->solid == FALSE) {
+        dxf_write_real(w, 52, data->angle);
+        dxf_write_real(w, 41, data->scale);
+        dxf_write_int(w, 77, 0); // not double
+        // dxf_write_int(w,78, 0);
+        dxf_write_int(w, 78, 1);
+        dxf_write_real(w, 53, 45.0);
+        dxf_write_real(w, 43, 0.0);
+        dxf_write_real(w, 44, 0.0);
+        dxf_write_real(w, 45, -0.0883883476483184);
+        dxf_write_real(w, 46, 0.0883883476483185);
+        dxf_write_int(w, 79, 0);
+    }
+    dxf_write_int(w, 98, 0);
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 1001, "ACAD");
+        dxf_write_real(w, 1010, data->originX);
+        dxf_write_real(w, 1020, data->originY);
+        dxf_write_int(w, 1030, 0.0);
+    }
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_hatch_loop1(dxf_writer_t *w, const dxf_hatch_loop_data *data) {
+    dxf_write_int(w, 92, 1);
+    dxf_write_int(w, 93, data->numEdges);
+    // dxf_write_int(w,97, 0);
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_hatch_loop2(dxf_writer_t *w, const dxf_hatch_loop_data *data) {
+    dxf_write_int(w, 97, 0);
     return DXF_SUCCESS;
 }
 
 dxf_I32 dxf_write_hatch_edge(dxf_writer_t *w, const dxf_hatch_edge_data *data) {
+    if (data->type < 1 || data->type > 4) {
+        printf("WARNING: unsupported hatch edge type: %d", data->type);
+    }
+
+    dxf_write_int(w, 72, data->type);
+
+    switch (data->type) {
+    // line:
+    case 1:
+        dxf_write_real(w, 10, data->x1);
+        dxf_write_real(w, 20, data->y1);
+        dxf_write_real(w, 11, data->x2);
+        dxf_write_real(w, 21, data->y2);
+        break;
+
+    // arc:
+    case 2:
+        dxf_write_real(w, 10, data->cx);
+        dxf_write_real(w, 20, data->cy);
+        dxf_write_real(w, 40, data->radius);
+        dxf_write_real(w, 50, data->angle1 / (2 * M_PI) * 360.0);
+        dxf_write_real(w, 51, data->angle2 / (2 * M_PI) * 360.0);
+        dxf_write_int(w, 73, (int)(data->ccw));
+        break;
+
+    // ellipse arc:
+    case 3:
+        dxf_write_real(w, 10, data->cx);
+        dxf_write_real(w, 20, data->cy);
+        dxf_write_real(w, 11, data->mx);
+        dxf_write_real(w, 21, data->my);
+        dxf_write_real(w, 40, data->ratio);
+        dxf_write_real(w, 50, data->angle1 / (2 * M_PI) * 360.0);
+        dxf_write_real(w, 51, data->angle2 / (2 * M_PI) * 360.0);
+        dxf_write_int(w, 73, (int)(data->ccw));
+        break;
+
+    // spline:
+    case 4:
+        dxf_write_int(w, 94, data->degree);
+        dxf_write_boolean(w, 73, data->rational);
+        dxf_write_boolean(w, 74, data->periodic);
+        dxf_write_int(w, 95, data->nKnots);
+        dxf_write_int(w, 96, data->nControl);
+        for (unsigned int i = 0; i < data->nKnots; i++) {
+            dxf_write_real(w, 40, data->knots[i]);
+        }
+        for (unsigned int i = 0; i < data->nControl; i++) {
+            dxf_write_real(w, 10, data->controlPoints[i * 2]);
+            dxf_write_real(w, 20, data->controlPoints[i * 2 + 1]);
+        }
+        for (unsigned int i = 0; i < data->nWeight; i++) {
+            dxf_write_real(w, 42, data->weights[i]);
+        }
+        if (data->nFit > 0) {
+            dxf_write_int(w, 97, data->nFit);
+            for (unsigned int i = 0; i < data->nFit; i++) {
+                dxf_write_real(w, 11, data->fitPoints[i * 2]);
+                dxf_write_real(w, 21, data->fitPoints[i * 2 + 1]);
+            }
+        }
+        if (fabs(data->startTangentX) > 1.0e-4 || fabs(data->startTangentY) > 1.0e-4) {
+            dxf_write_real(w, 12, data->startTangentX);
+            dxf_write_real(w, 22, data->startTangentY);
+        }
+        if (fabs(data->endTangentX) > 1.0e-4 || fabs(data->endTangentY) > 1.0e-4) {
+            dxf_write_real(w, 13, data->endTangentX);
+            dxf_write_real(w, 23, data->endTangentY);
+        }
+        break;
+
+    default:
+        break;
+    }
     return DXF_SUCCESS;
 }
 
 uint32_t
 dxf_write_image(dxf_writer_t *w, const dxf_image_data *data, const dxf_attributes *attr) {
-    return DXF_SUCCESS;
+
+    dxf_write_entity(w, "IMAGE");
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbEntity");
+    }
+    dxf_entity_attributes(w, attr);
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbRasterImage");
+        dxf_write_int(w, 90, 0);
+    }
+    // insertion point
+    dxf_write_real(w, 10, data->ipx);
+    dxf_write_real(w, 20, data->ipy);
+    dxf_write_real(w, 30, data->ipz);
+
+    // vector along bottom side (1 pixel long)
+    dxf_write_real(w, 11, data->ux);
+    dxf_write_real(w, 21, data->uy);
+    dxf_write_real(w, 31, data->uz);
+
+    // vector along left side (1 pixel long)
+    dxf_write_real(w, 12, data->vx);
+    dxf_write_real(w, 22, data->vy);
+    dxf_write_real(w, 32, data->vz);
+
+    // image size in pixel
+    dxf_write_real(w, 13, data->width);
+    dxf_write_real(w, 23, data->height);
+
+    // handle of IMAGEDEF object
+    dxf_U32 handle = dxf_handle(w, 340);
+
+    // flags
+    dxf_write_int(w, 70, 15);
+
+    // clipping:
+    dxf_write_int(w, 280, 0);
+
+    // brightness, contrast, fade
+    dxf_write_int(w, 281, data->brightness);
+    dxf_write_int(w, 282, data->contrast);
+    dxf_write_int(w, 283, data->fade);
+
+    return handle;
 }
 
 dxf_I32
 dxf_write_image_def(dxf_writer_t *w, const dxf_I32 handle, const dxf_image_data *data) {
+    dxf_write_string(w, 0, "IMAGEDEF");
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_hex(w, 5, handle);
+    }
+
+    if (w->version == DL_VERSION_2000) {
+        dxf_write_string(w, 100, "AcDbRasterImageDef");
+        dxf_write_int(w, 90, 0);
+    }
+    // file name:
+    dxf_write_string(w, 1, data->ref);
+
+    // image size in pixel
+    dxf_write_real(w, 10, data->width);
+    dxf_write_real(w, 20, data->height);
+
+    dxf_write_real(w, 11, 1.0);
+    dxf_write_real(w, 21, 1.0);
+
+    // loaded:
+    dxf_write_int(w, 280, 1);
+    // units:
+    dxf_write_int(w, 281, 0);
     return DXF_SUCCESS;
 }
 
 dxf_I32
 dxf_write_layer(dxf_writer_t *w, const dxf_layer_data *data, const dxf_attributes *attr) {
+    if (strlen(data->name) == 0) {
+        fprintf(stderr, "DL_Dxf::writeLayer: Layer name must not be empty\n");
+        return;
+    }
+
+    int color = attr->color;
+    if (color >= 256) {
+        fprintf(stderr, "Layer color cannot be %d. Changed to 7.\n", color);
+        color = 7;
+    }
+    if (data->off) {
+        // negative color value means layer is off:
+        color = -color;
+    }
+
+    if (data->name == "0") {
+        dxf_table_layers(w, 0x10);
+    } else {
+        dxf_table_layers(w, 0UL);
+    }
+
+    dxf_write_string(w, 2, data->name);
+    dxf_write_int(w, 70, data->flags);
+    dxf_write_int(w, 62, color);
+    if (w->version >= DL_VERSION_2000 && attr->color24 != -1) {
+        dxf_write_int(w, 420, attr->color24);
+    }
+
+    dxf_write_string(w, 6,
+                     (strlen(attr->line_type) == 0 ? "CONTINUOUS" : attr->line_type));
+
+    if (w->version >= DL_VERSION_2000) {
+        // layer defpoints cannot be plotted
+        char lstr[512] = {0};
+        memcpy(lstr, data->name, strlen(data->name));
+        for (int i = 0; i < strlen(lstr); ++i) {
+            lstr[i] = tolower(lstr[i]);
+        }
+        if (EQUAL(lstr, "defpoints")) {
+            dxf_write_int(w, 290, 0);
+        }
+    }
+    if (w->version >= DL_VERSION_2000 && attr->width != -1) {
+        dxf_write_int(w, 370, attr->width);
+    }
+    if (w->version >= DL_VERSION_2000) {
+        dxf_write_hex(w, 390, 0xF);
+    }
     return DXF_SUCCESS;
 }
 
@@ -842,4 +1401,5 @@ dxf_write_x_record_string(dxf_writer_t *w, dxf_I32 handle, const dxf_CHAR *value
 }
 
 dxf_I32 dxf_write_objects_end(dxf_writer_t *w) { return DXF_SUCCESS; }
+
 dxf_I32 dxf_write_comment(dxf_writer_t *w, const dxf_CHAR *comment) { return 0; }

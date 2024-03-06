@@ -826,6 +826,7 @@ typedef struct dxf_hatch_edge_data {
     dxf_U32  nKnots;        /* Number of knots. */
     dxf_U32  nControl;      /* Number of control points. */
     dxf_U32  nFit;          /* Number of fit points. */
+    dxf_U32  nWeight;       /* Number of weights */
     dxf_F64 *controlPoints; /* Coordinate of control points*/
     dxf_F64 *knots;
     dxf_F64 *weights;
