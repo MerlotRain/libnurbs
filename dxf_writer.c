@@ -1287,7 +1287,7 @@ dxf_I32
 dxf_write_layer(dxf_writer_t *w, const dxf_layer_data *data, const dxf_attributes *attr) {
     if (strlen(data->name) == 0) {
         fprintf(stderr, "DL_Dxf::writeLayer: Layer name must not be empty\n");
-        return;
+        return DXF_FAILURE;
     }
 
     int color = attr->color;
@@ -1300,7 +1300,7 @@ dxf_write_layer(dxf_writer_t *w, const dxf_layer_data *data, const dxf_attribute
         color = -color;
     }
 
-    if (data->name == "0") {
+    if (EQUALN(data->name, "0", 1)) {
         dxf_table_layers(w, 0x10);
     } else {
         dxf_table_layers(w, 0UL);
