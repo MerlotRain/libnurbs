@@ -9,13 +9,15 @@
 
 /* --------------------------------- dxf writer struct -------------------------------- */
 struct dxf_writer_t {
-    FILE           *fp;
-    enum Version    version;
-    dxf_U32         m_handle;
-    dxf_U32         modelSpaceHandle;
-    dxf_U32         paperSpaceHandle;
-    dxf_U32         paperSpace0Handle;
-    dxf_document_t *doc;
+    FILE        *fp;
+    enum Version version;
+    dxf_U32      m_handle;
+    dxf_U32      modelSpaceHandle;
+    dxf_U32      paperSpaceHandle;
+    dxf_U32      paperSpace0Handle;
+    dxf_CHAR     polylineLayer[512];
+    dxf_U32      appDictionaryHandle;
+    dxf_U32      styleHandleStd;
 };
 
 static dxf_I32 dxf_handle(dxf_writer_t *w, dxf_I32 gc) {
@@ -62,13 +64,6 @@ dxf_create_writer(dxf_writer_t **w, const dxf_CHAR *filename, enum Version versi
         return DXF_FAILURE;
 
     memset(*w, 0, sizeof(dxf_writer_t));
-    dxf_document_t *doc = (dxf_document_t *)malloc(sizeof(dxf_document_t));
-    if (doc == NULL) {
-        dxf_destroy_writer(*w);
-        return DXF_FAILURE;
-    }
-    (*w)->doc = doc;
-
     FILE *fp = fopen(filename, "w");
     if (fp == NULL) {
         dxf_destroy_writer(*w);
@@ -88,10 +83,6 @@ dxf_I32 dxf_destroy_writer(dxf_writer_t *w) {
     if (w->fp) {
         fclose(w->fp);
         w->fp = NULL;
-    }
-    if (w->doc) {
-        dxf_destroy_document(w->doc);
-        w->doc = NULL;
     }
     free(w);
     return DXF_SUCCESS;
@@ -305,7 +296,7 @@ dxf_I32 dxf_write_polyline(dxf_writer_t            *w,
     } else {
         dxf_write_entity(w, "POLYLINE");
         dxf_entity_attributes(w, attr);
-        memcpy(w->doc->polylineLayer, attr->layer, strlen(attr->layer));
+        memcpy(w->polylineLayer, attr->layer, strlen(attr->layer));
         dxf_write_int(w, 66, 1);
         dxf_write_int(w, 70, data->flags);
         dxf_coordinate(w, DL_VERTEX_COORD_CODE, 0.0, 0.0, 0.0);
@@ -322,7 +313,7 @@ dxf_I32 dxf_write_vertex(dxf_writer_t *w, const dxf_vertex_data *data) {
         }
     } else {
         dxf_write_entity(w, "VERTEX");
-        dxf_write_string(w, 8, w->doc->polylineLayer);
+        dxf_write_string(w, 8, w->polylineLayer);
         dxf_coordinate(w, DL_VERTEX_COORD_CODE, data->x, data->y, data->z);
         if (fabs(data->bulge) > 1.0e-10) {
             dxf_write_real(w, 42, data->bulge);

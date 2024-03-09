@@ -73,6 +73,9 @@ typedef void              *dxf_POINTER;
 #define DXF_FAILURE -1
 #define DXF_SUCCESS 1
 
+#define DXF_CODE(...)
+#define DXF_SUBCLASS_MARKER(code, mark)
+
 #define DL_DXF_MAX_STRING     1024
 #define DL_DXF_MAX_LINE       1024
 #define DL_DXF_MAX_GROUP_CODE 1100
@@ -324,6 +327,13 @@ static const dxf_F64 dxfColors[][3] = {
 #define DL_XRECORD               200
 #define DL_DICTIONARY            210
 
+/* dxf 3d point */
+typedef struct dxf_point3d {
+    dxf_F64 x;
+    dxf_F64 y;
+    dxf_F64 z;
+} dxf_point3d;
+
 /* ------------------------------------------------------------------------------------ */
 /*                                 dxf Entity Structure                                 */
 /* ------------------------------------------------------------------------------------ */
@@ -383,6 +393,86 @@ typedef struct dxf_style_data {
     dxf_BOOL italic;
 } dxf_style_data;
 
+/* ------------------------------------------------------------------------------------ */
+/*                                     DXF Entities                                     */
+/* ------------------------------------------------------------------------------------ */
+
+/* Trace Data / solid data / 3d face data. */
+typedef struct dxf_3d_face_data {
+    DXF_SUBCLASS_MARKER(100, AcDbFace)
+    DXF_CODE(10, 20, 30) dxf_point3d vtx0; /* Location of 1. vertex */
+    DXF_CODE(11, 21, 31) dxf_point3d vtx1; /* Location of 2. vertex */
+    DXF_CODE(12, 22, 32) dxf_point3d vtx2; /* Location of 3. vertex */
+    DXF_CODE(13, 23, 33) dxf_point3d vtx3; /* Location of 4. vertex */
+    DXF_CODE(39) dxf_F64 thickness;        /* Thickness (optional; default = 0) */
+    /* Invisible edge flags default=0
+        1 first edge is invisible
+        2 second edge is invisible
+        4 third edge is invisible
+        8 fourth edge is invisible */
+    DXF_CODE(70) int invisible_edges;
+
+} dxf_3d_face_data, dxf_3d_solid_data, dxf_trace_data;
+
+/* Trace Data / solid data / 3d face data. */
+typedef struct dxf_3d_solid_data {
+    DXF_SUBCLASS_MARKER(100, AcDbFace)
+    DXF_CODE(10, 20, 30) dxf_point3d vtx0;         /* Location of 1. vertex */
+    DXF_CODE(11, 21, 31) dxf_point3d vtx1;         /* Location of 2. vertex */
+    DXF_CODE(12, 22, 32) dxf_point3d vtx2;         /* Location of 3. vertex */
+    DXF_CODE(13, 23, 33) dxf_point3d vtx3;         /* Location of 4. vertex */
+    DXF_CODE(39) dxf_F64 thickness;                /* Thickness (optional; default = 0) */
+    DXF_CODE(210, 220, 230) dxf_point3d extrusion; /* Extrusion direction */
+} dxf_3d_solid_data, dxf_trace_data;
+
+/* Arc Data. */
+typedef struct dxf_arc_data {
+    dxf_point3d center;      /* Center point of arc */
+    dxf_F64     radius;      /* Radius of arc. */
+    dxf_F64     thickness;   /* Thickness */
+    dxf_F64     start_angle; /* Startangle of arc in degrees. */
+    dxf_F64     end_angle;   /* Endangle of arc in degrees. */
+    dxf_point3d extrusion;   /* Extrusion direction */
+} dxf_arc_data;
+
+/* Circle Data. */
+typedef struct dxf_circle_data {
+    dxf_F64     thickness; /* Thickness */
+    dxf_point3d center;    /* Center point of circle  */
+    dxf_F64     radius;    /* Radius of arc. */
+    dxf_point3d extrusion; /* Extrusion direction */
+} dxf_circle_data;
+
+/* Ellipse Data. */
+typedef struct dxf_ellipse_data {
+    dxf_point3d center;      /* Center point of circle  */
+    dxf_point3d major_axis;  /* Endpoint of major axis, relative to the dxf.center (Vec3),
+                                default value is (1, 0, 0).  */
+    dxf_F64     ratio;       /* Ratio of minor axis to major axis. */
+    dxf_F64     start_param; /* Start parameter (float), default value is 0. */
+    dxf_F64     end_param;   /* End parameter (float), default value is 2π. */
+    dxf_point3d extrusion;   /* Extrusion direction */
+} dxf_ellipse_data;
+
+/* Hatch data. */
+typedef struct dxf_hatch_data {
+    dxf_point3d elevation;         /* Elevation point */
+    dxf_point3d extrusion;         /* Extrusion direction */
+    dxf_CHAR    pattern_name[512]; /* Pattern name. */
+    dxf_BOOL    solid_fill;        /* Solid fill flag (TRUE=solid, FALSE=pattern). */
+    dxf_BOOL    associative; /* Associativity flag (associative = 1; non-associative = 0);
+                for MPolygon, solid-fill flag (has solid fill    = 1; lacks solid fill = 0 */
+    dxf_I32 numLoops;        /* Number of boundary paths (loops). */
+    dxf_I32 hatch_style;     /* 0 normal; 1 outer; 2 ignore */
+    dxf_I32 pattern_type;    /* 0 user; 1 predefined; 2 custom */
+    dxf_F64 pattern_scale;   /* The actual pattern scale factor */
+    dxf_F64 pattern_angle;   /* The actual pattern rotation angle in degrees */
+    dxf_I32 boundary_annotation_flag; /*  For MPolygon, boundary annotation flag (boundary
+  is an annotated boundary = 1; boundary is not an annotated boundary = 0 */
+    dxf_F64 originX;                  /* Pattern origin */
+    dxf_F64 originY;
+} dxf_hatch_data;
+
 /* Point Data. */
 typedef struct dxf_point_data {
     dxf_F64 x; /* X Coordinate of the point. */
@@ -420,24 +510,6 @@ typedef struct dxf_ray_data {
     dxf_F64 dz; /* Z direction vector. */
 } dxf_ray_data;
 
-/* Arc Data. */
-typedef struct dxf_arc_data {
-    dxf_F64 cx;     /* X Coordinate of center point. */
-    dxf_F64 cy;     /* Y Coordinate of center point. */
-    dxf_F64 cz;     /* Z Coordinate of center point. */
-    dxf_F64 radius; /* Radius of arc. */
-    dxf_F64 angle1; /* Startangle of arc in degrees. */
-    dxf_F64 angle2; /* Endangle of arc in degrees. */
-} dxf_arc_data;
-
-/* Circle Data. */
-typedef struct dxf_circle_data {
-    dxf_F64 cx;     /* X Coordinate of center point. */
-    dxf_F64 cy;     /* Y Coordinate of center point. */
-    dxf_F64 cz;     /* Z Coordinate of center point. */
-    dxf_F64 radius; /* Radius of arc. */
-} dxf_circle_data;
-
 /* Polyline Data. */
 typedef struct dxf_polyline_data {
     dxf_U32 number; /* Number of vertices in this polyline. */
@@ -458,14 +530,6 @@ typedef struct dxf_vertex_data {
     dxf_F64 bulge; /* Bulge of vertex. (The tangent of 1/4 of the arc angle or 0
                      for lines) */
 } dxf_vertex_data;
-
-/* Trace Data / solid data / 3d face data. */
-typedef struct dxf_trace_data {
-    dxf_F64 thickness; /* Thickness */
-    dxf_F64 x[4];      /* Points */
-    dxf_F64 y[4];
-    dxf_F64 z[4];
-} dxf_trace_data, dxf_solid_data, dxf_3d_face_data;
 
 /* Spline Data. */
 typedef struct dxf_spline_data {
@@ -501,19 +565,6 @@ typedef struct dxf_fit_point_data {
     dxf_F64 y; /* Y coordinate of the fit point. */
     dxf_F64 z; /* Z coordinate of the fit point. */
 } dxf_fit_point_data;
-
-/* Ellipse Data. */
-typedef struct dxf_ellipse_data {
-    dxf_F64 cx;     /* X Coordinate of center point. */
-    dxf_F64 cy;     /* Y Coordinate of center point. */
-    dxf_F64 cz;     /* Z Coordinate of center point. */
-    dxf_F64 mx;     /* X coordinate of the endpoint of the major axis. */
-    dxf_F64 my;     /* Y coordinate of the endpoint of the major axis. */
-    dxf_F64 mz;     /* Z coordinate of the endpoint of the major axis. */
-    dxf_F64 ratio;  /* Ratio of minor axis to major axis. */
-    dxf_F64 angle1; /* Startangle of ellipse in rad. */
-    dxf_F64 angle2; /* Endangle of ellipse in rad. */
-} dxf_ellipse_data;
 
 /* Insert Data. */
 typedef struct dxf_insert_data {
@@ -786,17 +837,6 @@ typedef struct dxf_leader_vertex_data {
     dxf_F64 y; /* Y Coordinate of the vertex. */
     dxf_F64 z; /* Z Coordinate of the vertex. */
 } dxf_leader_vertex_data;
-
-/* Hatch data. */
-typedef struct dxf_hatch_data {
-    dxf_I32  numLoops;     /* Number of boundary paths (loops). */
-    dxf_BOOL solid;        /* Solid fill flag (TRUE=solid, FALSE=pattern). */
-    dxf_F64  scale;        /* Pattern scale or spacing */
-    dxf_F64  angle;        /* Pattern angle in degrees */
-    dxf_CHAR pattern[512]; /* Pattern name. */
-    dxf_F64  originX;      /* Pattern origin */
-    dxf_F64  originY;
-} dxf_hatch_data;
 
 /* Hatch boundary path (loop) data. */
 typedef struct dxf_hatch_loop_data {
@@ -1359,6 +1399,63 @@ typedef struct dxf_reader_callback_t {
     /* Called when a SEQEND occurs (when a POLYLINE or ATTRIB is done) */
     void (*end_sequence)();
 } dxf_reader_callback_t;
+
+typedef struct dxf_document_t {
+    enum Version version;
+
+    dxf_CHAR polylineLayer[512];
+    dxf_F64 *vertices;
+    dxf_I32  maxVertices;
+    dxf_I32  vertexIndex;
+
+    dxf_F64 *knots;
+    dxf_I32  maxKnots;
+    dxf_I32  knotIndex;
+
+    dxf_F64 *weights;
+    dxf_I32  weightIndex;
+
+    dxf_F64 *controlPoints;
+    dxf_I32  maxControlPoints;
+    dxf_I32  controlPointIndex;
+
+    dxf_F64 *fitPoints;
+    dxf_I32  maxFitPoints;
+    dxf_I32  fitPointIndex;
+
+    dxf_F64 *leaderVertices;
+    dxf_I32  maxLeaderVertices;
+    dxf_I32  leaderVertexIndex;
+
+    dxf_BOOL            firstHatchLoop;
+    dxf_hatch_edge_data hatchEdge;
+    struct link_list  **hatchEdges; /* dxf_hatch_edge_data second rank pointer */
+
+    dxf_BOOL xRecordValues;
+
+    /* ...same as integer */
+    dxf_U32 groupCode;
+    /* Only the useful part of the group value */
+    dxf_CHAR groupValue[DL_DXF_MAX_LINE];
+    /* Current entity type */
+    dxf_I32 currentObjectType;
+    /* Value of the current setting */
+    dxf_CHAR settingValue[DL_DXF_MAX_LINE + 1];
+    /* Key of the current setting */
+    dxf_CHAR settingKey[DL_DXF_MAX_LINE];
+    /* Stores the group codes */
+    struct hash_table *values;
+    /* First call of this method. We initialize all group values in the first call. */
+    dxf_BOOL firstCall;
+    /* Attributes of the current entity (layer, color, width, line type) */
+    dxf_attributes attrib;
+    /* library version. hex: 0x20003001 = 2.0.3.1 */
+    dxf_I32 libVersion;
+    /* app specific dictionary handle: */
+    dxf_U32 appDictionaryHandle;
+    /* handle of standard text style, referenced by dim style: */
+    dxf_U32 styleHandleStd;
+} dxf_document_t;
 
 /* Read dxf file. */
 DXF_API dxf_I32 dxf_read(const dxf_CHAR *filename, dxf_reader_callback_t *r);
