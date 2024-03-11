@@ -581,6 +581,72 @@ typedef struct dxf_lwpolyline_data {
     dxf_point2d *vertex_list;    /*!< vertex list */
 } dxf_lwpolyline_data;
 
+/* Text Data. */
+typedef struct dxf_text_data {
+    dxf_point3d insertion_point; /* insertion point, code 10, 20 & 30 */
+    dxf_point3d alignment_point; /* alignment point, code 11, 21 & 31 */
+    dxf_F64     thickness;       /* thickness, code 39 */
+    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_F64     height;          /* height text, code 40 */
+    dxf_CHAR    text[512];       /* text string, code 1 */
+    dxf_F64     angle;           /* rotation angle in degrees (360), code 50 */
+    dxf_F64     widthScale;      /* width factor, code 41 */
+    dxf_F64     oblique;         /* oblique angle, code 51 */
+    dxf_CHAR    style[512];      /* style name, code 7 */
+    int         text_generation; /* text generation, code 71 */
+                                 /* default = 0 */
+                                 /* 2 = Text is backward (mirrored in X) */
+                                 /* 4 = Text is upside down (mirrored in Y) */
+    dxf_I32 alignH;              /* horizontal align, code 72 */
+                                 /* Top = 0 */
+                                 /* Bottom = 1 */
+                                 /* Middle = 2 */
+                                 /* Top = 3 */
+    dxf_I32 alignV;              /* vertical align, code 73 */
+                                 /* Left = 0 */
+                                 /* Centered = 1 */
+                                 /* Right = 2 */
+                                 /* Aligned = 3 (if VAlign==0) */
+                                 /* middle = 4 (if VAlign==0) */
+                                 /* fit into point = 5 (if VAlign==0) */
+    // dwgHandle   styleH;       /* handle for text style */
+
+} dxf_text_data;
+
+/* MText Data. */
+typedef struct dxf_mText_data {
+    dxf_point3d insertion_point; /* insertion point, code 10, 20 & 30 */
+    dxf_point3d alignment_point; /* alignment point, code 11, 21 & 31 */
+    dxf_F64     thickness;       /* thickness, code 39 */
+    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_F64     height;          /* height text, code 40 */
+    dxf_CHAR    text[512];       /* text string, code 1 */
+    dxf_F64     angle;           /* rotation angle in degrees (360), code 50 */
+    dxf_F64     widthScale;      /* width factor, code 41 */
+    dxf_F64     oblique;         /* oblique angle, code 51 */
+    dxf_CHAR    style[512];      /* style name, code 7 */
+    int         text_generation; /* text generation, code 71 */
+                                 /* default = 0 */
+                                 /* 2 = Text is backward (mirrored in X) */
+                                 /* 4 = Text is upside down (mirrored in Y) */
+    dxf_I32 alignH;              /* horizontal align, code 72 */
+                                 /* Top = 0 */
+                                 /* Bottom = 1 */
+                                 /* Middle = 2 */
+                                 /* Top = 3 */
+    dxf_I32 alignV;              /* vertical align, code 73 */
+                                 /* TopLeft = 1 */
+                                 /* TopCenter = 2 */
+                                 /* TopRight = 3 */
+                                 /* MiddleLeft = 4 */
+                                 /* MiddleCenter = 5 */
+                                 /* MiddleRight = 6 */
+                                 /* BottomLeft = 7 */
+                                 /* BottomCenter = 8 */
+                                 /* BottomRight  = 9 */
+    dxf_F64 inter_lin;           /* width factor, code 44 */
+} dxf_mText_data;
+
 /* Hatch data. */
 typedef struct dxf_hatch_data {
     dxf_point3d elevation;            /* Elevation point */
@@ -657,72 +723,6 @@ typedef struct dxf_fit_point_data {
     dxf_F64 y; /* Y coordinate of the fit point. */
     dxf_F64 z; /* Z coordinate of the fit point. */
 } dxf_fit_point_data;
-
-/* MText Data. */
-typedef struct dxf_mText_data {
-    dxf_F64 ipx;                /* X Coordinate of insertion point. */
-    dxf_F64 ipy;                /* Y Coordinate of insertion point. */
-    dxf_F64 ipz;                /* Z Coordinate of insertion point. */
-    dxf_F64 dirX;               /* X Coordinate of X direction vector. */
-    dxf_F64 dirY;               /* Y Coordinate of X direction vector. */
-    dxf_F64 dirZ;               /* Z Coordinate of X direction vector. */
-    dxf_F64 height;             /* Text height */
-    dxf_F64 width;              /* Width of the text box. */
-    dxf_I32 attachmentPoint;    /*
-                                 * Attachment point.
-                                 *
-                                 * 1 = Top left, 2 = Top center, 3 = Top right,
-                                 * 4 = Middle left, 5 = Middle center, 6 = Middle
-                                 * right, 7 = Bottom left, 8 = Bottom center, 9 =
-                                 * Bottom right
-                                 */
-    dxf_I32 drawingDirection;   /*
-                                 * Drawing direction.
-                                 *
-                                 * 1 = left to right, 3 = top to bottom, 5 = by style
-                                 */
-    dxf_I32 lineSpacingStyle;   /*
-                                 * Line spacing style.
-                                 *
-                                 * 1 = at least, 2 = exact
-                                 */
-    dxf_F64  lineSpacingFactor; /* Line spacing factor. 0.25 .. 4.0 */
-    dxf_CHAR text[512];         /* Text string. */
-    dxf_CHAR style[512];        /* Style string. */
-    dxf_F64  angle;             /* Rotation angle. */
-} dxf_mText_data;
-
-/* Text Data. */
-typedef struct dxf_text_data {
-    dxf_point3d insertion_point; /* insertion point, code 10, 20 & 30 */
-    dxf_point3d alignment_point; /* alignment point, code 11, 21 & 31 */
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_F64     height;          /* height text, code 40 */
-    dxf_CHAR    text[512];       /* text string, code 1 */
-    dxf_F64     angle;           /* rotation angle in degrees (360), code 50 */
-    dxf_F64     widthScale;      /* width factor, code 41 */
-    dxf_F64     oblique;         /* oblique angle, code 51 */
-    dxf_CHAR    style[512];      /* style name, code 7 */
-    int         text_generation; /* text generation, code 71 */
-                                 /* default = 0 */
-                                 /* 2 = Text is backward (mirrored in X) */
-                                 /* 4 = Text is upside down (mirrored in Y) */
-    dxf_I32 alignH;              /* horizontal align, code 72 */
-                                 /* Top = 0 */
-                                 /* Bottom = 1 */
-                                 /* Middle = 2 */
-                                 /* Top = 3 */
-    dxf_I32 alignV;              /* vertical align, code 73 */
-                                 /* Left = 0 */
-                                 /* Centered = 1 */
-                                 /* Right = 2 */
-                                 /* Aligned = 3 (if VAlign==0) */
-                                 /* middle = 4 (if VAlign==0) */
-                                 /* fit into point = 5 (if VAlign==0) */
-    // dwgHandle   styleH;       /* handle for text style */
-
-} dxf_text_data;
 
 /* Arc Aligned Text Data. */
 typedef struct dxf_arc_aligned_text_data {
