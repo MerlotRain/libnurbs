@@ -81,7 +81,7 @@ typedef void              *dxf_POINTER;
 /*                                   dxf kernel codes                                   */
 /* ------------------------------------------------------------------------------------ */
 
-enum Color {
+typedef enum {
     black     = 250,
     green     = 3,
     red       = 1,
@@ -98,16 +98,75 @@ enum Color {
     l_magenta = 221,
     l_gray    = 252,
     white     = 7
-};
+} Color;
 
 /* Version numbers for the DXF Format. */
-enum Version {
-    AC1009_MIN = 0, // R12, minimalistic
-    AC1009,         // R12
-    AC1012,
-    AC1014,
-    AC1015 // R2000
-};
+typedef enum {
+    AC1006, /*!< R10. */
+    AC1009, /*!< R11 & R12. */
+    AC1012, /*!< R13. */
+    AC1014, /*!< R14. */
+    AC1015, /*!< ACAD 2000. */
+    AC1018, /*!< ACAD 2004. */
+    AC1021, /*!< ACAD 2007. */
+    AC1024, /*!< ACAD 2010. */
+    AC1027  /*!< ACAD 2013. */
+} Version;
+
+typedef enum {
+    ERR_NONE,             /*!< No error. */
+    ERR_UNKNOWN,          /*!< UNKNOWN. */
+    ERR_OPEN,             /*!< error opening file. */
+    ERR_VERSION,          /*!< unsupported version. */
+    ERR_READ_METADATA,    /*!< error reading mata data. */
+    ERR_READ_FILE_HEADER, /*!< error in file header read process. */
+    ERR_READ_HEADER,      /*!< error in header vars read process. */
+    ERR_READ_HANDLES,     /*!< error in object map read process. */
+    ERR_READ_CLASSES,     /*!< error in classes read process. */
+    ERR_READ_TABLES,      /*!< error in tables read process. */
+    ERR_READ_BLOCKS,      /*!< error in block read process. */
+    ERR_READ_ENTITIES,    /*!< error in entities read process. */
+    ERR_READ_OBJECTS      /*!< error in objects read process. */
+} ErrorCode;
+
+typedef enum {
+    width00      = 0,  /* 0.00mm (dxf 0)*/
+    width01      = 1,  /* 0.05mm (dxf 5)*/
+    width02      = 2,  /* 0.09mm (dxf 9)*/
+    width03      = 3,  /* 0.13mm (dxf 13)*/
+    width04      = 4,  /* 0.15mm (dxf 15)*/
+    width05      = 5,  /* 0.18mm (dxf 18)*/
+    width06      = 6,  /* 0.20mm (dxf 20)*/
+    width07      = 7,  /* 0.25mm (dxf 25)*/
+    width08      = 8,  /* 0.30mm (dxf 30)*/
+    width09      = 9,  /* 0.35mm (dxf 35)*/
+    width10      = 10, /* 0.40mm (dxf 40)*/
+    width11      = 11, /* 0.50mm (dxf 50)*/
+    width12      = 12, /* 0.53mm (dxf 53)*/
+    width13      = 13, /* 0.60mm (dxf 60)*/
+    width14      = 14, /* 0.70mm (dxf 70)*/
+    width15      = 15, /* 0.80mm (dxf 80)*/
+    width16      = 16, /* 0.90mm (dxf 90)*/
+    width17      = 17, /* 1.00mm (dxf 100)*/
+    width18      = 18, /* 1.06mm (dxf 106)*/
+    width19      = 19, /* 1.20mm (dxf 120)*/
+    width20      = 20, /* 1.40mm (dxf 140)*/
+    width21      = 21, /* 1.58mm (dxf 158)*/
+    width22      = 22, /* 2.00mm (dxf 200)*/
+    width23      = 23, /* 2.11mm (dxf 211)*/
+    widthByLayer = 29, /* by layer (dxf -1) */
+    widthByBlock = 30, /* by block (dxf -2) */
+    widthDefault = 31  /* by default (dxf -3) */
+} LineWidth;
+
+typedef enum { ModelSpace = 0, PaperSpace = 1 } Space;
+
+typedef enum {
+    CastAndReceiveShadows = 0,
+    CastShadows           = 1,
+    ReceiveShadows        = 2,
+    IgnoreShadows         = 3
+} ShadowMode;
 
 // Extended color palette:
 // The first entry is only for direct indexing starting with [1]
@@ -115,17 +174,6 @@ enum Version {
 static const dxf_F64 dxfColors[][3] = {
 #include "dxf_color.inl"
 };
-
-// AutoCAD VERSION aliases
-#define DL_VERSION_R12  AC1009
-#define DL_VERSION_LT2  AC1009
-#define DL_VERSION_R13  AC1012 // not supported yet
-#define DL_VERSION_LT95 AC1012 // not supported yet
-#define DL_VERSION_R14  AC1014 // not supported yet
-#define DL_VERSION_LT97 AC1014 // not supported yet
-#define DL_VERSION_LT98 AC1014 // not supported yet
-#define DL_VERSION_2000 AC1015
-#define DL_VERSION_2002 AC1015
 
 // DXF Group Codes:
 
@@ -324,6 +372,67 @@ static const dxf_F64 dxfColors[][3] = {
 #define DL_XRECORD               200
 #define DL_DICTIONARY            210
 
+/* Layer Data. */
+typedef struct dxf_layer_data {
+    dxf_CHAR name[512]; /* Layer name. */
+    dxf_I32  flags;     /* Layer flags. (1 = frozen, 2 = frozen by default, 4 =
+                           locked) */
+    dxf_BOOL off;       /* Layer is off */
+} dxf_layer_data;
+
+/* Line Type Data. */
+typedef struct dxf_line_type_data {
+    dxf_CHAR name[512];        /* Linetype name */
+    dxf_CHAR description[512]; /* Linetype description */
+    dxf_I32  flags;            /* Linetype flags */
+    dxf_I32  numberOfDashes;   /* Number of dashes */
+    dxf_F64  patternLength;    /* Pattern length */
+    dxf_F64 *pattern;          /* Pattern */
+} dxf_line_type_data;
+
+/* Text style data. */
+typedef struct dxf_style_data {
+    dxf_CHAR name[512];            /* Style name */
+    dxf_I32  flags;                /* Style flags */
+    dxf_F64  fixedTextHeight;      /* Fixed text height or 0 for not fixed. */
+    dxf_F64  widthFactor;          /* Width factor */
+    dxf_F64  obliqueAngle;         /* Oblique angle */
+    dxf_I32  textGenerationFlags;  /* Text generation flags */
+    dxf_F64  lastHeightUsed;       /* Last height used */
+    dxf_CHAR primaryFontFile[512]; /* Primary font file name */
+    dxf_CHAR bigFontFile[512];     /* Big font file name */
+    dxf_BOOL bold;
+    dxf_BOOL italic;
+} dxf_style_data;
+
+/* Block attribute data. */
+typedef struct dxf_attribute_data {
+    dxf_text_data text;
+    dxf_CHAR      tag[512]; /* Tag. */
+} dxf_attribute_data;
+
+/* Image Definition Data. */
+typedef struct dxf_image_def_data {
+    dxf_CHAR ref[512];  /* Reference to the image file (unique, used to refer to the image
+                       def  object). */
+    dxf_CHAR file[512]; /* Image file */
+} dxf_image_def_data;
+
+/* Dictionary data. */
+typedef struct dxf_dictionary_data {
+    dxf_CHAR handle[512];
+} dxf_dictionary_data;
+
+/* Dictionary entry data. */
+typedef struct dxf_dictionary_entry_data {
+    dxf_CHAR name[512];
+    dxf_CHAR handle[512];
+} dxf_dictionary_entry_data;
+
+/* ------------------------------------------------------------------------------------ */
+/*                                 dxf Entity Structure                                 */
+/* ------------------------------------------------------------------------------------ */
+
 typedef enum {
     UNKNOWN,
     E3DFACE,
@@ -336,13 +445,13 @@ typedef enum {
     CIRCLE,
     // BODY,
     DIMENSION,
-    DIMALIGNED,
-    DIMLINEAR,
-    DIMRADIAL,
-    DIMDIAMETRIC,
-    DIMANGULAR2L,
-    DIMANGULAR3P,
-    DIMORDINATE,
+    DIM_ALIGNED,
+    DIM_LINEAR,
+    DIM_RADIAL,
+    DIM_DIAMETRIC,
+    DIM_ANGULAR2L,
+    DIM_ANGULAR3P,
+    DIM_ORDINATE,
     ELLIPSE,
     HATCH,
     // HELIX,
@@ -382,404 +491,348 @@ typedef enum {
     XLINE,
 } EntityType;
 /* dxf 3d point */
-typedef struct dxf_point3d {
+typedef struct dxf_coord {
     dxf_F64 x;
     dxf_F64 y;
     dxf_F64 z;
-} dxf_point3d;
+} dxf_coord;
 
-/* dxf 2d point */
-typedef struct dxf_point2d {
-    dxf_F64 x;
-    dxf_F64 y;
-} dxf_point2d;
-
-/* ------------------------------------------------------------------------------------ */
-/*                                 dxf Entity Structure                                 */
-/* ------------------------------------------------------------------------------------ */
-
-/* Storing and passing around attributes. Attributes are the layer name, color, width and
- * line type. */
-typedef struct dxf_attributes {
-    dxf_CHAR layer[512];
-    dxf_CHAR line_type[512];
-    dxf_I32  color;
-    dxf_I32  color24;
-    dxf_I32  width;
-    dxf_I32  handle;
-    dxf_F64  line_type_scale;
-    dxf_BOOL is_paper_space;
-} dxf_attributes;
-
-/* Layer Data. */
-typedef struct dxf_layer_data {
-    dxf_CHAR name[512]; /* Layer name. */
-    dxf_I32  flags;     /* Layer flags. (1 = frozen, 2 = frozen by default, 4 =
-                           locked) */
-    dxf_BOOL off;       /* Layer is off */
-} dxf_layer_data;
-
-/* Line Type Data. */
-typedef struct dxf_line_type_data {
-    dxf_CHAR name[512];        /* Linetype name */
-    dxf_CHAR description[512]; /* Linetype description */
-    dxf_I32  flags;            /* Linetype flags */
-    dxf_I32  numberOfDashes;   /* Number of dashes */
-    dxf_F64  patternLength;    /* Pattern length */
-    dxf_F64 *pattern;          /* Pattern */
-} dxf_line_type_data;
-
-/* Text style data. */
-typedef struct dxf_style_data {
-    dxf_CHAR name[512];            /* Style name */
-    dxf_I32  flags;                /* Style flags */
-    dxf_F64  fixedTextHeight;      /* Fixed text height or 0 for not fixed. */
-    dxf_F64  widthFactor;          /* Width factor */
-    dxf_F64  obliqueAngle;         /* Oblique angle */
-    dxf_I32  textGenerationFlags;  /* Text generation flags */
-    dxf_F64  lastHeightUsed;       /* Last height used */
-    dxf_CHAR primaryFontFile[512]; /* Primary font file name */
-    dxf_CHAR bigFontFile[512];     /* Big font file name */
-    dxf_BOOL bold;
-    dxf_BOOL italic;
-} dxf_style_data;
-
-/* ------------------------------------------------------------------------------------ */
-/*                                     DXF Entities                                     */
-/* ------------------------------------------------------------------------------------ */
+/* dxf entity attribute data. */
+typedef struct dxf_entity_attr {
+    dxf_U32 handle;        /* entity identifier, code 5 */
+    dxf_U32 parentHandle;  /* Soft-pointer ID/handle to owner BLOCK_RECORD object, code
+                              330 */
+    Space      space;      /* space indicator, code 67 */
+    dxf_CHAR   layer[512]; /* layer name, code 8 */
+    dxf_CHAR   line_type[512];  /* line type, code 6 */
+    dxf_U32    material;        /* hard pointer id to material object, code 347 */
+    dxf_I32    color;           /* entity color, code 62 */
+    LineWidth  lWeight;         /* entity line weight, code 370 */
+    dxf_F64    ltype_scale;     /* linetype scale, code 48 */
+    dxf_BOOL   visible;         /* entity visibility, code 60 */
+    dxf_I32    num_proxy_graph; /* Number of bytes in proxy graphics, code 92 */
+    dxf_CHAR   proxy_graphics;  /* proxy graphics bytes, code 310 */
+    dxf_I32    color24;         /* 24-bit color, code 420 */
+    dxf_CHAR   color_name[64];  /* color name, code 430 */
+    dxf_I32    transparency;    /* transparency, code 440 */
+    dxf_I32    plot_style;      /* hard pointer id to plot style object, code 390 */
+    ShadowMode shadow;          /* shadow mode, code 284 */
+    dxf_BOOL   have_extrusion;  /* set to true if the entity have extrusion */
+} dxf_entity_attr;
 
 /* Point Data. */
 typedef struct dxf_point_data {
-    dxf_point3d base_point;      /* base point, code 10, 20 & 30*/
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_coord base_point;      /* base point, code 10, 20 & 30*/
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
 } dxf_point_data;
 
 /* Line Data. */
 typedef struct dxf_line_data {
-    dxf_point3d begin_point;     /* start point, code 10, 20 & 30 */
-    dxf_point3d end_point;       /* end point, code 11, 21 & 31 */
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_coord begin_point;     /* start point, code 10, 20 & 30 */
+    dxf_coord end_point;       /* end point, code 11, 21 & 31 */
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
 } dxf_line_data;
 
 /* Ray Data. */
 typedef struct dxf_ray_data {
-    dxf_point3d base_point;      /* base point, code 10, 20 & 30 */
-    dxf_point3d direction_point; /* direction point, code 11, 21 & 31 */
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_coord base_point;      /* base point, code 10, 20 & 30 */
+    dxf_coord direction_point; /* direction point, code 11, 21 & 31 */
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
 } dxf_ray_data;
 
 /* XLine Data. */
 typedef struct dxf_xline_data {
-    dxf_point3d base_point;      /* base point, code 10, 20 & 30 */
-    dxf_point3d direction_point; /* direction point, code 11, 21 & 31 */
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_coord base_point;      /* base point, code 10, 20 & 30 */
+    dxf_coord direction_point; /* direction point, code 11, 21 & 31 */
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
 } dxf_xline_data;
 
 /* Circle Data. */
 typedef struct dxf_circle_data {
-    dxf_point3d base_point;      /* base point, code 10, 20 & 30*/
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_F64     radius;          /* radius of arc, code 40 */
+    dxf_coord base_point;      /* base point, code 10, 20 & 30*/
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_F64   radius;          /* radius of arc, code 40 */
 } dxf_circle_data;
 
 /* Arc Data. */
 typedef struct dxf_arc_data {
-    dxf_point3d base_point;      /* base point, code 10, 20 & 30*/
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_F64     radius;          /* radius of arc, code 40 */
-    dxf_F64     start_angle;     /* start angle, code 50 in radians */
-    dxf_F64     end_angle;       /* end angle, code 51 in radians */
-    dxf_I32     ccw; /* is counter clockwise arc?, only used in hatch, code 73 */
+    dxf_coord base_point;      /* base point, code 10, 20 & 30*/
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_F64   radius;          /* radius of arc, code 40 */
+    dxf_F64   start_angle;     /* start angle, code 50 in radians */
+    dxf_F64   end_angle;       /* end angle, code 51 in radians */
+    dxf_I32   ccw; /* is counter clockwise arc?, only used in hatch, code 73 */
 } dxf_arc_data;
 
 /* Ellipse Data */
 typedef struct dxf_ellipse_data {
-    dxf_point3d center;      /* Center point of circle, code 10, 20 & 30 */
-    dxf_point3d major_axis;  /* Endpoint of major axis, relative to the dxf.center (Vec3),
+    dxf_coord center;      /* Center point of circle, code 10, 20 & 30 */
+    dxf_coord major_axis;  /* Endpoint of major axis, relative to the dxf.center (Vec3),
                                 code 11, 21 & 31  default value is (1, 0, 0).  */
-    dxf_F64     ratio;       /* ratio, code 40 */
-    dxf_F64     start_param; /* start parameter, code 41, 0.0 for full ellipse*/
-    dxf_F64     end_param;   /* end parameter, code 42, 2*PI for full ellipse */
-    dxf_point3d extrusion;   /* is counter clockwise arc?, only used in hatch, code 73 */
+    dxf_F64   ratio;       /* ratio, code 40 */
+    dxf_F64   start_param; /* start parameter, code 41, 0.0 for full ellipse*/
+    dxf_F64   end_param;   /* end parameter, code 42, 2*PI for full ellipse */
+    dxf_coord extrusion;   /* is counter clockwise arc?, only used in hatch, code 73 */
 } dxf_ellipse_data;
 
 /* Trace Data */
 typedef struct dxf_trace_data {
-    dxf_point3d vtx0;            /* Location of 1. vertex code 10, 20 & 30 */
-    dxf_point3d vtx1;            /* Location of 2. vertex code 11, 21 & 31 */
-    dxf_point3d vtx2;            /* Location of 3. vertex code 12, 22 & 32 */
-    dxf_point3d vtx3;            /* Location of 4. vertex code 13, 23 & 33 */
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_coord vtx0;            /* Location of 1. vertex code 10, 20 & 30 */
+    dxf_coord vtx1;            /* Location of 2. vertex code 11, 21 & 31 */
+    dxf_coord vtx2;            /* Location of 3. vertex code 12, 22 & 32 */
+    dxf_coord vtx3;            /* Location of 4. vertex code 13, 23 & 33 */
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
 } dxf_trace_data;
 
 /* solid data */
 typedef struct dxf_solid_data {
-    dxf_point3d vtx0;            /* Location of 1. vertex code 10, 20 & 30 */
-    dxf_point3d vtx1;            /* Location of 2. vertex code 11, 21 & 31 */
-    dxf_point3d vtx2;            /* Location of 3. vertex code 12, 22 & 32 */
-    dxf_point3d vtx3;            /* Location of 4. vertex code 13, 23 & 33 */
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230 */
+    dxf_coord vtx0;            /* Location of 1. vertex code 10, 20 & 30 */
+    dxf_coord vtx1;            /* Location of 2. vertex code 11, 21 & 31 */
+    dxf_coord vtx2;            /* Location of 3. vertex code 12, 22 & 32 */
+    dxf_coord vtx3;            /* Location of 4. vertex code 13, 23 & 33 */
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230 */
 } dxf_solid_data;
 
 /* 3d face data. */
 typedef struct dxf_3d_face_data {
-    dxf_point3d vtx0;            /* Location of 1. vertex code 10, 20 & 30 */
-    dxf_point3d vtx1;            /* Location of 2. vertex code 11, 21 & 31 */
-    dxf_point3d vtx2;            /* Location of 3. vertex code 12, 22 & 32 */
-    dxf_point3d vtx3;            /* Location of 4. vertex code 13, 23 & 33 */
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230 */
-    dxf_I32     invisible_edges; /* Invisible edge flags, code 70, default=0 */
-                                 /* 1 first edge is invisible */
-                                 /* 2 second edge is invisible */
-                                 /* 4 third edge is invisible */
-                                 /* 8 fourth edge is invisible */
-
+    dxf_coord vtx0;            /* Location of 1. vertex code 10, 20 & 30 */
+    dxf_coord vtx1;            /* Location of 2. vertex code 11, 21 & 31 */
+    dxf_coord vtx2;            /* Location of 3. vertex code 12, 22 & 32 */
+    dxf_coord vtx3;            /* Location of 4. vertex code 13, 23 & 33 */
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230 */
+    dxf_I32   invisible_edges; /* Invisible edge flags, code 70, default=0 */
+                               /* 1 first edge is invisible */
+                               /* 2 second edge is invisible */
+                               /* 4 third edge is invisible */
+                               /* 8 fourth edge is invisible */
 } dxf_3d_face_data;
 
 /* Block Data. */
 typedef struct dxf_block_data {
-    dxf_point3d base_point;      /* base point, code 10, 20 & 30*/
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_CHAR    name[512];       /* Block name, code 2 */
-    dxf_I32     flags;           /* Block flags. (not used currently), code 70 */
+    dxf_coord base_point;      /* base point, code 10, 20 & 30*/
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_CHAR  name[512];       /* Block name, code 2 */
+    dxf_I32   flags;           /* Block flags. (not used currently), code 70 */
 } dxf_block_data;
 
 /* Insert Data. */
 typedef struct dxf_insert_data {
-    dxf_point3d base_point;      /* base point, code 10, 20 & 30*/
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_CHAR    name[512];       /* Name of the referred block. code 2 */
-    dxf_F64     xScale;          /* x scale factor, code 41 */
-    dxf_F64     yScale;          /* y scale factor, code 42 */
-    dxf_F64     zScale;          /* z scale factor, code 43 */
-    dxf_F64     angle;           /* rotation angle in radians, code 50 */
-    dxf_I32     col_count;       /* column count, code 70 */
-    dxf_I32     row_count;       /* row count, code 71 */
-    dxf_F64     col_space;       /* column space, code 44 */
-    dxf_F64     row_space;       /* row space, code 45 */
+    dxf_coord base_point;      /* base point, code 10, 20 & 30*/
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_CHAR  name[512];       /* Name of the referred block. code 2 */
+    dxf_F64   xScale;          /* x scale factor, code 41 */
+    dxf_F64   yScale;          /* y scale factor, code 42 */
+    dxf_F64   zScale;          /* z scale factor, code 43 */
+    dxf_F64   angle;           /* rotation angle in radians, code 50 */
+    dxf_I32   col_count;       /* column count, code 70 */
+    dxf_I32   row_count;       /* row count, code 71 */
+    dxf_F64   col_space;       /* column space, code 44 */
+    dxf_F64   row_space;       /* row space, code 45 */
 } dxf_insert_data;
 
+/* Class to handle vertex for lwpolyline entity */
+typedef struct dxf_point2d {
+    double x;           /*!< x coordinate, code 10 */
+    double y;           /*!< y coordinate, code 20 */
+    double start_width; /*!< Start width, code 40 */
+    double end_width;   /*!< End width, code 41 */
+    double bulge;       /*!< bulge, code 42 */
+} dxf_point2d;
+
+/* Lwpolyline Data. */
 typedef struct dxf_lwpolyline_data {
     dxf_I32      vertex_num;      /* number of vertex, code 90 */
     dxf_I32      flags;           /* polyline flag, code 70, default 0 */
     dxf_F64      width;           /* constant width, code 43 */
     dxf_F64      elevation;       /* elevation, code 38 */
     dxf_F64      thickness;       /* thickness, code 39 */
-    dxf_point3d  extrusion_point; /*  Dir extrusion normal vector, code 210, 220 & 230 */
+    dxf_coord    extrusion_point; /*  Dir extrusion normal vector, code 210, 220 & 230 */
     dxf_point2d  vertex;          /* current vertex to add data */
     dxf_point2d *vertex_list;     /* vertex list */
 } dxf_lwpolyline_data;
 
 /* Text Data. */
 typedef struct dxf_text_data {
-    dxf_point3d insertion_point; /* insertion point, code 10, 20 & 30 */
-    dxf_point3d alignment_point; /* alignment point, code 11, 21 & 31 */
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_F64     height;          /* height text, code 40 */
-    dxf_CHAR    text[512];       /* text string, code 1 */
-    dxf_F64     angle;           /* rotation angle in degrees (360), code 50 */
-    dxf_F64     widthScale;      /* width factor, code 41 */
-    dxf_F64     oblique;         /* oblique angle, code 51 */
-    dxf_CHAR    style[512];      /* style name, code 7 */
-    dxf_I32     text_generation; /* text generation, code 71 */
-                                 /* default = 0 */
-                                 /* 2 = Text is backward (mirrored in X) */
-                                 /* 4 = Text is upside down (mirrored in Y) */
-    dxf_I32 alignH;              /* horizontal align, code 72 */
-                                 /* Top = 0 */
-                                 /* Bottom = 1 */
-                                 /* Middle = 2 */
-                                 /* Top = 3 */
-    dxf_I32 alignV;              /* vertical align, code 73 */
-                                 /* Left = 0 */
-                                 /* Centered = 1 */
-                                 /* Right = 2 */
-                                 /* Aligned = 3 (if VAlign==0) */
-                                 /* middle = 4 (if VAlign==0) */
-                                 /* fit into point = 5 (if VAlign==0) */
+    dxf_coord insertion_point; /* insertion point, code 10, 20 & 30 */
+    dxf_coord alignment_point; /* alignment point, code 11, 21 & 31 */
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_F64   height;          /* height text, code 40 */
+    dxf_CHAR  text[512];       /* text string, code 1 */
+    dxf_F64   angle;           /* rotation angle in degrees (360), code 50 */
+    dxf_F64   widthScale;      /* width factor, code 41 */
+    dxf_F64   oblique;         /* oblique angle, code 51 */
+    dxf_CHAR  style[512];      /* style name, code 7 */
+    dxf_I32   text_generation; /* text generation, code 71 */
+                               /* default = 0 */
+                               /* 2 = Text is backward (mirrored in X) */
+                               /* 4 = Text is upside down (mirrored in Y) */
+    dxf_I32 alignH;            /* horizontal align, code 72 */
+                               /* Top = 0 */
+                               /* Bottom = 1 */
+                               /* Middle = 2 */
+                               /* Top = 3 */
+    dxf_I32 alignV;            /* vertical align, code 73 */
+                               /* Left = 0 */
+                               /* Centered = 1 */
+                               /* Right = 2 */
+                               /* Aligned = 3 (if VAlign==0) */
+                               /* middle = 4 (if VAlign==0) */
+                               /* fit into point = 5 (if VAlign==0) */
     // dwgHandle   styleH;       /* handle for text style */
-
 } dxf_text_data;
 
 /* MText Data. */
 typedef struct dxf_mText_data {
-    dxf_point3d insertion_point; /* insertion point, code 10, 20 & 30 */
-    dxf_point3d alignment_point; /* alignment point, code 11, 21 & 31 */
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_F64     height;          /* height text, code 40 */
-    dxf_CHAR    text[512];       /* text string, code 1 */
-    dxf_F64     angle;           /* rotation angle in degrees (360), code 50 */
-    dxf_F64     widthScale;      /* width factor, code 41 */
-    dxf_F64     oblique;         /* oblique angle, code 51 */
-    dxf_CHAR    style[512];      /* style name, code 7 */
-    dxf_I32     text_generation; /* text generation, code 71 */
-                                 /* default = 0 */
-                                 /* 2 = Text is backward (mirrored in X) */
-                                 /* 4 = Text is upside down (mirrored in Y) */
-    dxf_I32 alignH;              /* horizontal align, code 72 */
-                                 /* Top = 0 */
-                                 /* Bottom = 1 */
-                                 /* Middle = 2 */
-                                 /* Top = 3 */
-    dxf_I32 alignV;              /* vertical align, code 73 */
-                                 /* TopLeft = 1 */
-                                 /* TopCenter = 2 */
-                                 /* TopRight = 3 */
-                                 /* MiddleLeft = 4 */
-                                 /* MiddleCenter = 5 */
-                                 /* MiddleRight = 6 */
-                                 /* BottomLeft = 7 */
-                                 /* BottomCenter = 8 */
-                                 /* BottomRight  = 9 */
-    dxf_F64 inter_lin;           /* width factor, code 44 */
+    dxf_coord insertion_point; /* insertion point, code 10, 20 & 30 */
+    dxf_coord alignment_point; /* alignment point, code 11, 21 & 31 */
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_F64   height;          /* height text, code 40 */
+    dxf_CHAR  text[512];       /* text string, code 1 */
+    dxf_F64   angle;           /* rotation angle in degrees (360), code 50 */
+    dxf_F64   widthScale;      /* width factor, code 41 */
+    dxf_F64   oblique;         /* oblique angle, code 51 */
+    dxf_CHAR  style[512];      /* style name, code 7 */
+    dxf_I32   text_generation; /* text generation, code 71 */
+                               /* default = 0 */
+                               /* 2 = Text is backward (mirrored in X) */
+                               /* 4 = Text is upside down (mirrored in Y) */
+    dxf_I32 alignH;            /* horizontal align, code 72 */
+                               /* Top = 0 */
+                               /* Bottom = 1 */
+                               /* Middle = 2 */
+                               /* Top = 3 */
+    dxf_I32 alignV;            /* vertical align, code 73 */
+                               /* TopLeft = 1 */
+                               /* TopCenter = 2 */
+                               /* TopRight = 3 */
+                               /* MiddleLeft = 4 */
+                               /* MiddleCenter = 5 */
+                               /* MiddleRight = 6 */
+                               /* BottomLeft = 7 */
+                               /* BottomCenter = 8 */
+                               /* BottomRight  = 9 */
+    dxf_F64 inter_lin;         /* width factor, code 44 */
 } dxf_mText_data;
 
 /* Vertex Data. */
 typedef struct dxf_vertex_data {
-    dxf_point3d base_point;      /* base point, code 10, 20 & 30*/
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_F64     start_width;     /* Start width, code 40 */
-    dxf_F64     end_width;       /* End width, code 41 */
-    dxf_F64     bulge;           /* bulge, code 42 */
-    dxf_I32     flags;           /* vertex flag, code 70, default 0 */
-    dxf_F64     tan_direction;   /* curve fit tangent direction, code 50 */
-    dxf_I32     vtx1;            /* polyface mesh vertex index, code 71, default 0 */
-    dxf_I32     vtx2;            /* polyface mesh vertex index, code 72, default 0 */
-    dxf_I32     vtx3;            /* polyface mesh vertex index, code 73, default 0 */
-    dxf_I32     vtx4;            /* polyface mesh vertex index, code 74, default 0 */
-    dxf_I32     identifier;      /* vertex identifier, code 91, default 0 */
+    dxf_coord base_point;      /* base point, code 10, 20 & 30*/
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_F64   start_width;     /* Start width, code 40 */
+    dxf_F64   end_width;       /* End width, code 41 */
+    dxf_F64   bulge;           /* bulge, code 42 */
+    dxf_I32   flags;           /* vertex flag, code 70, default 0 */
+    dxf_F64   tan_direction;   /* curve fit tangent direction, code 50 */
+    dxf_I32   vtx1;            /* polyface mesh vertex index, code 71, default 0 */
+    dxf_I32   vtx2;            /* polyface mesh vertex index, code 72, default 0 */
+    dxf_I32   vtx3;            /* polyface mesh vertex index, code 73, default 0 */
+    dxf_I32   vtx4;            /* polyface mesh vertex index, code 74, default 0 */
+    dxf_I32   identifier;      /* vertex identifier, code 91, default 0 */
 } dxf_vertex_data;
 
 /* Polyline Data. */
 typedef struct dxf_polyline_data {
-    dxf_point3d base_point;      /* base point, code 10, 20 & 30*/
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_F64     elevation;       /* elevation of the polyline. */
-    dxf_I32     flags;           /* polyline flag, code 70, default 0 */
-    dxf_F64     start_width;     /* Start width, code 40, default 0 */
-    dxf_F64     end_width;       /* End width, code 41, default 0 */
-    dxf_I32     num_m; /* polygon mesh M vertex or polyface vtx num, code 71, default 0 */
-    dxf_I32 num_n;   /* polygon mesh N vertex or polyface face num, code 72, default 0 */
-    dxf_I32 smoothM; /* smooth surface M density, code 73, default 0 */
-    dxf_I32 smoothN; /* smooth surface M density, code 74, default 0 */
-    dxf_I32 curve_type; /* curves & smooth surface type, code 75, default 0 */
-                        /* 0 = No smooth surface fitted */
-                        /* 5 = Quadratic B-spline surface */
-                        /* 6 = Cubic B-spline surface */
-                        /* 8 = Bezier surface */
+    dxf_coord base_point;      /* base point, code 10, 20 & 30*/
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_F64   elevation;       /* elevation of the polyline. */
+    dxf_I32   flags;           /* polyline flag, code 70, default 0 */
+    dxf_F64   start_width;     /* Start width, code 40, default 0 */
+    dxf_F64   end_width;       /* End width, code 41, default 0 */
+    dxf_I32   num_m; /* polygon mesh M vertex or polyface vtx num, code 71, default 0 */
+    dxf_I32   num_n; /* polygon mesh N vertex or polyface face num, code 72, default 0 */
+    dxf_I32   smoothM;    /* smooth surface M density, code 73, default 0 */
+    dxf_I32   smoothN;    /* smooth surface M density, code 74, default 0 */
+    dxf_I32   curve_type; /* curves & smooth surface type, code 75, default 0 */
+                          /* 0 = No smooth surface fitted */
+                          /* 5 = Quadratic B-spline surface */
+                          /* 6 = Cubic B-spline surface */
+                          /* 8 = Bezier surface */
 } dxf_polyline_data;
 
 /* Spline Data. */
 typedef struct dxf_spline_data {
-    dxf_point3d  normalVec;    /* normal vector, code 210, 220, 230 */
-    dxf_point3d  tgStart;      /* start tangent, code 12, 22, 32 */
-    dxf_point3d  tgEnd;        /* end tangent, code 13, 23, 33 */
-    dxf_I32      flags;        /* spline flag, code 70 */
-    dxf_I32      degree;       /* degree of the spline, code 71 */
-    dxf_U32      num_knots;    /* number of knots, code 72, default 0 */
-    dxf_U32      num_control;  /* number of control points, code 73, default 0 */
-    dxf_U32      num_fit;      /* number of fit points, code 74, default 0 */
-    dxf_F64      tol_knot;     /* knot tolerance, code 42, default 0.0000001 */
-    dxf_F64      tol_control;  /* control point tolerance, code 43, default 0.0000001 */
-    dxf_F64      tol_fit;      /* fit point tolerance, code 44, default 0.0000001 */
-    dxf_F64     *knots_list;   /* knots list, code 40 */
-    dxf_point3d *control_list; /* control points list, code 10, 20 & 30 */
-    dxf_point3d *fit_list;     /* fit points list, code 11, 21 & 31 */
+    dxf_coord  normalVec;    /* normal vector, code 210, 220, 230 */
+    dxf_coord  tgStart;      /* start tangent, code 12, 22, 32 */
+    dxf_coord  tgEnd;        /* end tangent, code 13, 23, 33 */
+    dxf_I32    flags;        /* spline flag, code 70 */
+    dxf_I32    degree;       /* degree of the spline, code 71 */
+    dxf_U32    num_knots;    /* number of knots, code 72, default 0 */
+    dxf_U32    num_control;  /* number of control points, code 73, default 0 */
+    dxf_U32    num_fit;      /* number of fit points, code 74, default 0 */
+    dxf_F64    tol_knot;     /* knot tolerance, code 42, default 0.0000001 */
+    dxf_F64    tol_control;  /* control point tolerance, code 43, default 0.0000001 */
+    dxf_F64    tol_fit;      /* fit point tolerance, code 44, default 0.0000001 */
+    dxf_F64   *knots_list;   /* knots list, code 40 */
+    dxf_coord *control_list; /* control points list, code 10, 20 & 30 */
+    dxf_coord *fit_list;     /* fit points list, code 11, 21 & 31 */
 } dxf_spline_data;
+
+/* Hatch edge data. */
+typedef struct dxf_hatch_edge_data {
+    dxf_I32 type; /* Edge type. 1=line, 2=arc, 3=elliptic arc, 4=spline. */
+    union {
+        dxf_line_data    *line;
+        dxf_arc_data     *arc;
+        dxf_ellipse_data *ellipse;
+        dxf_spline_data  *spline;
+    } ito;
+} dxf_hatch_edge_data;
 
 /* Hatch boundary path (loop) data. */
 typedef struct dxf_hatch_loop_data {
-    dxf_I32 type;      /* boundary path type, code 92, polyline=2, default=0 */
-    dxf_I32 num_edges; /* number of edges (if not a polyline), code 93 */
+    dxf_I32              type; /* boundary path type, code 92, polyline=2, default=0 */
+    dxf_I32              num_edges; /* number of edges (if not a polyline), code 93 */
+    dxf_hatch_edge_data *edges;
 } dxf_hatch_loop_data;
 
 /* Hatch data. */
 typedef struct dxf_hatch_data {
-    dxf_point3d base_point;      /* base point, code 10, 20 & 30*/
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_CHAR    name[512];       /* hatch pattern name, code 2 */
-    dxf_I32     solid;           /* solid fill flag, code 70, solid=1, pattern=0 */
-    dxf_I32     associative;     /* associativity,code 71, associatve=1, non-assoc.=0 */
-    dxf_I32     style;           /* hatch style, code 75 */
-    dxf_I32     pattern;         /* hatch pattern type, code 76 */
-    dxf_I32     double_flag;     /* hatch pattern double flag, code 77 */
-    dxf_I32     loop_num;        /* number of boundary paths (loops), code 91 */
-    dxf_F64     angle;           /* hatch pattern angle, code 52 */
-    dxf_F64     scale;           /* hatch pattern scale, code 41 */
-    dxf_I32     def_lines;       /* number of pattern definition lines, code 78 */
+    dxf_coord base_point;      /* base point, code 10, 20 & 30*/
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_CHAR  name[512];       /* hatch pattern name, code 2 */
+    dxf_I32   solid;           /* solid fill flag, code 70, solid=1, pattern=0 */
+    dxf_I32   associative;     /* associativity,code 71, associatve=1, non-assoc.=0 */
+    dxf_I32   style;           /* hatch style, code 75 */
+    dxf_I32   pattern;         /* hatch pattern type, code 76 */
+    dxf_I32   double_flag;     /* hatch pattern double flag, code 77 */
+    dxf_I32   loop_num;        /* number of boundary paths (loops), code 91 */
+    dxf_F64   angle;           /* hatch pattern angle, code 52 */
+    dxf_F64   scale;           /* hatch pattern scale, code 41 */
+    dxf_I32   def_lines;       /* number of pattern definition lines, code 78 */
 } dxf_hatch_data;
 
 /* Image Data. */
 typedef struct dxf_image_data {
-    dxf_point3d begin_point;     /* start point, code 10, 20 & 30 */
-    dxf_point3d end_point;       /* end point, code 11, 21 & 31 */
-    dxf_F64     thickness;       /* thickness, code 39 */
-    dxf_point3d extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
-    dxf_U32     ref;             /* Hard reference to imagedef object, code 340 */
-    double      size_u;          /* image size in pixels, U value, code 13 */
-    double      size_v;          /* image size in pixels, V value, code 23 */
-    double      dz;              /* z coordinate, code 33 */
-    int         clip;            /* Clipping state, code 280, 0=off 1=on */
-    int         brightness;      /* Brightness value, code 281, (0-100) default 50 */
-    int         contrast;        /* Brightness value, code 282, (0-100) default 50 */
-    int         fade;            /* Brightness value, code 283, (0-100) default 0 */
-    dxf_point3d vVector; /* V-vector of a single pixel, x coordinate, code 12, 22 & 32 */
+    dxf_coord begin_point;     /* start point, code 10, 20 & 30 */
+    dxf_coord end_point;       /* end point, code 11, 21 & 31 */
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    dxf_U32   ref;             /* Hard reference to imagedef object, code 340 */
+    double    size_u;          /* image size in pixels, U value, code 13 */
+    double    size_v;          /* image size in pixels, V value, code 23 */
+    double    dz;              /* z coordinate, code 33 */
+    int       clip;            /* Clipping state, code 280, 0=off 1=on */
+    int       brightness;      /* Brightness value, code 281, (0-100) default 50 */
+    int       contrast;        /* Brightness value, code 282, (0-100) default 50 */
+    int       fade;            /* Brightness value, code 283, (0-100) default 0 */
+    dxf_coord vVector; /* V-vector of a single pixel, x coordinate, code 12, 22 & 32 */
 } dxf_image_data;
-
-/* Arc Aligned Text Data. */
-typedef struct dxf_arc_aligned_text_data {
-    dxf_CHAR text[512];              /* Text string */
-    dxf_CHAR font[512];              /* Font name */
-    dxf_CHAR style[512];             /* Style */
-    dxf_F64  cx;                     /* X coordinate of arc center point. */
-    dxf_F64  cy;                     /* Y coordinate of arc center point. */
-    dxf_F64  cz;                     /* Z coordinate of arc center point. */
-    dxf_F64  radius;                 /* Arc radius. */
-    dxf_F64  xScaleFactor;           /* Relative X scale factor. */
-    dxf_F64  height;                 /* Text height */
-    dxf_F64  spacing;                /* Character spacing */
-    dxf_F64  offset;                 /* Offset from arc */
-    dxf_F64  rightOffset;            /* Right offset */
-    dxf_F64  leftOffset;             /* Left offset */
-    dxf_F64  startAngle;             /* Start angle (radians) */
-    dxf_F64  endAngle;               /* End angle (radians) */
-    dxf_BOOL reversedCharacterOrder; /* Reversed character order: FALSE: normal, TRUE:
-                                    reverse. */
-    dxf_I32  direction;    /* Direction: 1: outward from center,2: inward from center */
-    dxf_I32  alignment;    /* Alignment: 1: fit, 2: left, 3: right, 4: center */
-    dxf_I32  side;         /* Side: 1: convex, 2: concave */
-    dxf_BOOL bold;         /* Bold flag */
-    dxf_BOOL italic;       /* Italic flag */
-    dxf_BOOL underline;    /* Underline flag */
-    dxf_I32  characterSet; /* Character set value. Windows character set identifier. */
-    dxf_I32  pitch;        /* Pitch and family value. Windows pitch and character family
-                              identifier. */
-    dxf_BOOL shxFont;      /* Font type: FALSE: TTF, TRUE: SHX */
-    dxf_BOOL wizard;       /* Wizard flag */
-    dxf_I32  arcHandle;    /* Arc handle/ID */
-} dxf_arc_aligned_text_data;
-
-/* Block attribute data. */
-typedef struct dxf_attribute_data {
-    dxf_text_data text;
-    dxf_CHAR      tag[512]; /* Tag. */
-} dxf_attribute_data;
 
 /* Generic Dimension Data. */
 typedef struct dxf_dimension_data {
@@ -915,85 +968,50 @@ typedef struct dxf_dim_ordinate_data {
 
 /* Leader (arrow). */
 typedef struct dxf_leader_data {
-    dxf_CHAR style[512]; /* Dimension style name, code 3 */
-    dxf_I32  arrow;      /* Arrowhead flag, code 71, 0=Disabled; 1=Enabled */
-    dxf_I32  leader;   /* Leader path type, code 72, 0=Straight line segments; 1=Spline */
-    dxf_I32  flag;     /* Leader creation flag, code 73, default 3 */
-    dxf_I32  hookline; /* Hook line direction flag, code 74, default 1 */
-    dxf_I32  hook_flag;         /* Hook line flag, code 75 */
-    dxf_F64  text_height;       /* Text annotation height, code 40 */
-    dxf_F64  text_width;        /* Text annotation width, code 41 */
-    dxf_I32  vert_num;          /* Number of vertices, code 76 */
-    dxf_I32  color_use;         /* Color to use if leader's DIMCLRD = BYBLOCK, code 77 */
-    dxf_U32  annotHandle;       /* Hard reference to associated annotation, code 340 */
-    dxf_point3d extrusionPoint; /* Normal vector, code 210, 220 & 230 */
-    dxf_point3d hor_dir;        /* Horizontal direction for leader, code 211, 221 & 231 */
-    dxf_point3d
+    dxf_CHAR  style[512]; /* Dimension style name, code 3 */
+    dxf_I32   arrow;      /* Arrowhead flag, code 71, 0=Disabled; 1=Enabled */
+    dxf_I32   leader; /* Leader path type, code 72, 0=Straight line segments; 1=Spline */
+    dxf_I32   flag;   /* Leader creation flag, code 73, default 3 */
+    dxf_I32   hookline;       /* Hook line direction flag, code 74, default 1 */
+    dxf_I32   hook_flag;      /* Hook line flag, code 75 */
+    dxf_F64   text_height;    /* Text annotation height, code 40 */
+    dxf_F64   text_width;     /* Text annotation width, code 41 */
+    dxf_I32   vert_num;       /* Number of vertices, code 76 */
+    dxf_I32   color_use;      /* Color to use if leader's DIMCLRD = BYBLOCK, code 77 */
+    dxf_U32   annotHandle;    /* Hard reference to associated annotation, code 340 */
+    dxf_coord extrusionPoint; /* Normal vector, code 210, 220 & 230 */
+    dxf_coord hor_dir;        /* Horizontal direction for leader, code 211, 221 & 231 */
+    dxf_coord
         offset_block; /* Offset of last leader vertex from block, code 212, 222 & 232 */
-    dxf_point3d offset_text;  /* Offset of last leader vertex from annotation, code 213,
+    dxf_coord offset_text;  /* Offset of last leader vertex from annotation, code 213,
                               223 & 233 */
-    dxf_point3d *vertex_list; /* vertex points list, code 10, 20 & 30 */
+    dxf_coord *vertex_list; /* vertex points list, code 10, 20 & 30 */
 } dxf_leader_data;
 
-/* Leader Vertex Data. */
-typedef struct dxf_leader_vertex_data {
-    dxf_F64 x; /* X Coordinate of the vertex. */
-    dxf_F64 y; /* Y Coordinate of the vertex. */
-    dxf_F64 z; /* Z Coordinate of the vertex. */
-} dxf_leader_vertex_data;
-
-/* Hatch edge data. */
-typedef struct dxf_hatch_edge_data {
-    dxf_BOOL defined; /* Set to TRUE if this edge is fully defined. */
-    dxf_I32  type;    /* Edge type. 1=line, 2=arc, 3=elliptic arc, 4=spline. */
-    dxf_F64  x1;      /* Start point (X). */
-    dxf_F64  y1;      /* Start point (Y). */
-    dxf_F64  x2;      /* End point (X). */
-    dxf_F64  y2;      /* End point (Y). */
-    dxf_F64  cx;      /* Center point of arc or ellipse arc (X). */
-    dxf_F64  cy;      /* Center point of arc or ellipse arc (Y). */
-    dxf_F64  radius;  /* Arc radius. */
-    dxf_F64  angle1;  /* Start angle of arc or ellipse arc. */
-    dxf_F64  angle2;  /* End angle of arc or ellipse arc. */
-    dxf_BOOL ccw;     /* Counterclockwise flag for arc or ellipse arc. */
-    dxf_F64  mx;      /* Major axis end point (X). */
-    dxf_F64  my;      /* Major axis end point (Y). */
-    dxf_F64  ratio;   /* Axis ratio */
-    dxf_U32  degree;  /* Spline degree */
-    dxf_BOOL rational;
-    dxf_BOOL periodic;
-    dxf_U32  nKnots;        /* Number of knots. */
-    dxf_U32  nControl;      /* Number of control points. */
-    dxf_U32  nFit;          /* Number of fit points. */
-    dxf_U32  nWeight;       /* Number of weights */
-    dxf_F64 *controlPoints; /* Coordinate of control points*/
-    dxf_F64 *knots;
-    dxf_F64 *weights;
-    dxf_F64 *fitPoints;
-    dxf_F64  startTangentX;
-    dxf_F64  startTangentY;
-    dxf_F64  endTangentX;
-    dxf_F64  endTangentY;
-    dxf_F64 *vertices; /* Number of fit points. */
-} dxf_hatch_edge_data;
-
-/* Image Definition Data. */
-typedef struct dxf_image_def_data {
-    dxf_CHAR ref[512];  /* Reference to the image file (unique, used to refer to the image
-                       def  object). */
-    dxf_CHAR file[512]; /* Image file */
-} dxf_image_def_data;
-
-/* Dictionary data. */
-typedef struct dxf_dictionary_data {
-    dxf_CHAR handle[512];
-} dxf_dictionary_data;
-
-/* Dictionary entry data. */
-typedef struct dxf_dictionary_entry_data {
-    dxf_CHAR name[512];
-    dxf_CHAR handle[512];
-} dxf_dictionary_entry_data;
+/* Viewport Data. */
+typedef struct dxf_viewport_data {
+    dxf_coord base_point;      /* base point, code 10, 20 & 30*/
+    dxf_F64   thickness;       /* thickness, code 39 */
+    dxf_coord extrusion_point; /* dir extrusion normal vector, code 210, 220 & 230  */
+    double    ps_width;        /* Width in paper space units, code 40 */
+    double    ps_height;       /* Height in paper space units, code 41 */
+    int       vp_status;       /* Viewport status, code 68 */
+    int       vp_id;           /* Viewport ID, code 69 */
+    double    center_x;        /* view center point X, code 12 */
+    double    center_y;        /* view center point Y, code 22 */
+    double    snap_point_x;    /* Snap base point X, code 13 */
+    double    snap_point_y;    /* Snap base point Y, code 23 */
+    double    snap_spacing_x;  /* Snap spacing X, code 14 */
+    double    snap_spacing_y;  /* Snap spacing Y, code 24 */
+    dxf_coord view_dir;        /* View direction vector, code 16, 26 & 36 */
+    dxf_coord view_target;     /* View target point, code 17, 27, 37 */
+    double    view_length;     /* Perspective lens length, code 42 */
+    double    front_clip;      /* Front clip plane Z value, code 43 */
+    double    back_clip;       /* Back clip plane Z value, code 44 */
+    double    view_height;     /* View height in model space units, code 45 */
+    double    snap_angle;      /* Snap angle, code 50 */
+    double    twist_angle;     /* view twist angle, code 51 */
+} dxf_viewport_data;
 
 /* ------------------------------------------------------------------------------------ */
 /*                                      dxf Writer                                      */
@@ -1003,7 +1021,7 @@ typedef struct dxf_writer_t dxf_writer_t;
 
 DXF_API dxf_I32 dxf_create_writer(dxf_writer_t  **w,
                                   const dxf_CHAR *filename,
-                                  enum Version    version);
+                                  Version         version);
 DXF_API dxf_I32 dxf_destroy_writer(dxf_writer_t *w);
 
 /* Must be overwritten by the implementing class to write a real value to the file. */
@@ -1068,35 +1086,35 @@ DXF_API dxf_I32 dxf_EOF(dxf_writer_t *w);
 DXF_API dxf_I32 dxf_write_entity(dxf_writer_t *w, const dxf_CHAR *text);
 
 /* Attributes of an entity. */
-DXF_API dxf_I32 dxf_entity_attributes(dxf_writer_t *w, const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_entity_attributes(dxf_writer_t *w, const dxf_entity_attr *attr);
 
 /* Writes a DXF header to the file currently opened by the given DXF writer object.*/
 DXF_API dxf_I32 dxf_write_header(dxf_writer_t *w);
 
 /*  Writes a point entity to the file. */
-DXF_API dxf_I32 dxf_write_point(dxf_writer_t         *w,
-                                const dxf_point_data *data,
-                                const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_point(dxf_writer_t          *w,
+                                const dxf_point_data  *data,
+                                const dxf_entity_attr *attr);
 
 /* Writes a line entity to the file. */
-DXF_API dxf_I32 dxf_write_line(dxf_writer_t         *w,
-                               const dxf_line_data  *data,
-                               const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_line(dxf_writer_t          *w,
+                               const dxf_line_data   *data,
+                               const dxf_entity_attr *attr);
 
 /* Writes an x line entity to the file. */
-DXF_API dxf_I32 dxf_write_xline(dxf_writer_t         *w,
-                                const dxf_xline_data *data,
-                                const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_xline(dxf_writer_t          *w,
+                                const dxf_xline_data  *data,
+                                const dxf_entity_attr *attr);
 
 /* Writes a ray entity to the file. */
-DXF_API dxf_I32 dxf_write_ray(dxf_writer_t         *w,
-                              const dxf_ray_data   *data,
-                              const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_ray(dxf_writer_t          *w,
+                              const dxf_ray_data    *data,
+                              const dxf_entity_attr *attr);
 
 /* Writes a polyline entity to the file. */
 DXF_API dxf_I32 dxf_write_polyline(dxf_writer_t            *w,
                                    const dxf_polyline_data *data,
-                                   const dxf_attributes    *attr);
+                                   const dxf_entity_attr   *attr);
 
 /* Writes a single vertex of a polyline to the file. */
 DXF_API dxf_I32 dxf_write_vertex(dxf_writer_t *w, const dxf_vertex_data *data);
@@ -1107,67 +1125,57 @@ DXF_API dxf_I32 dxf_write_polyline_end(dxf_writer_t *w);
 /* Writes a spline entity to the file. */
 DXF_API dxf_I32 dxf_write_spline(dxf_writer_t          *w,
                                  const dxf_spline_data *data,
-                                 const dxf_attributes  *attr);
-
-/* Writes a single control point of a spline to the file. */
-DXF_API dxf_I32 dxf_write_control_point(dxf_writer_t                 *w,
-                                        const dxf_control_point_data *data);
-
-/* Writes a single fit point of a spline to the file. */
-DXF_API dxf_I32 dxf_write_fit_point(dxf_writer_t *w, const dxf_fit_point_data *data);
-
-/* Writes a single knot of a spline to the file. */
-DXF_API dxf_I32 dxf_write_knot(dxf_writer_t *w, const dxf_knot_data *data);
+                                 const dxf_entity_attr *attr);
 
 /* Writes a circle entity to the file. */
 DXF_API dxf_I32 dxf_write_circle(dxf_writer_t          *w,
                                  const dxf_circle_data *data,
-                                 const dxf_attributes  *attr);
+                                 const dxf_entity_attr *attr);
 
 /* Writes an arc entity to the file. */
-DXF_API dxf_I32 dxf_write_arc(dxf_writer_t         *w,
-                              const dxf_arc_data   *data,
-                              const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_arc(dxf_writer_t          *w,
+                              const dxf_arc_data    *data,
+                              const dxf_entity_attr *attr);
 
 /* Writes an ellipse entity to the file. */
 DXF_API dxf_I32 dxf_write_ellipse(dxf_writer_t           *w,
                                   const dxf_ellipse_data *data,
-                                  const dxf_attributes   *attr);
+                                  const dxf_entity_attr  *attr);
 
 /* Writes a solid entity to the file. */
-DXF_API dxf_I32 dxf_write_solid(dxf_writer_t            *w,
-                                const dxf_3d_solid_data *data,
-                                const dxf_attributes    *attr);
+DXF_API dxf_I32 dxf_write_solid(dxf_writer_t          *w,
+                                const dxf_solid_data  *data,
+                                const dxf_entity_attr *attr);
 
 /* Writes a trace entity to the file. */
-DXF_API dxf_I32 dxf_write_trace(dxf_writer_t         *w,
-                                const dxf_trace_data *data,
-                                const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_trace(dxf_writer_t          *w,
+                                const dxf_trace_data  *data,
+                                const dxf_entity_attr *attr);
 
 /* Writes a 3d face entity to the file. */
 DXF_API dxf_I32 dxf_write_3dFace(dxf_writer_t           *w,
                                  const dxf_3d_face_data *data,
-                                 const dxf_attributes   *attr);
+                                 const dxf_entity_attr  *attr);
 
 /* Writes an insert to the file. */
 DXF_API dxf_I32 dxf_write_insert(dxf_writer_t          *w,
                                  const dxf_insert_data *data,
-                                 const dxf_attributes  *attr);
+                                 const dxf_entity_attr *attr);
 
 /* Writes a multi text entity to the file. */
-DXF_API dxf_I32 dxf_write_mText(dxf_writer_t         *w,
-                                const dxf_mText_data *data,
-                                const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_mText(dxf_writer_t          *w,
+                                const dxf_mText_data  *data,
+                                const dxf_entity_attr *attr);
 
 /* Writes a text entity to the file. */
-DXF_API dxf_I32 dxf_write_text(dxf_writer_t         *w,
-                               const dxf_text_data  *data,
-                               const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_text(dxf_writer_t          *w,
+                               const dxf_text_data   *data,
+                               const dxf_entity_attr *attr);
 
 /* Writes a attribute entity to the file. */
 DXF_API dxf_I32 dxf_write_attribute(dxf_writer_t             *w,
                                     const dxf_attribute_data *data,
-                                    const dxf_attributes     *attr);
+                                    const dxf_entity_attr    *attr);
 
 DXF_API dxf_I32 dxf_write_dim_style_overrides(dxf_writer_t             *w,
                                               const dxf_dimension_data *data);
@@ -1176,66 +1184,62 @@ DXF_API dxf_I32 dxf_write_dim_style_overrides(dxf_writer_t             *w,
 DXF_API dxf_I32 dxf_write_dim_aligned(dxf_writer_t               *w,
                                       const dxf_dimension_data   *data,
                                       const dxf_dim_aligned_data *edata,
-                                      const dxf_attributes       *attr);
+                                      const dxf_entity_attr      *attr);
 
 /* Writes a linear dimension entity to the file. */
-DXF_API dxf_I32 dxf_write_dim_linear(dxf_writer_t         *w,
-                                     dxf_dimension_data   *data,
-                                     dxf_dim_linear_data  *edata,
-                                     const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_dim_linear(dxf_writer_t          *w,
+                                     dxf_dimension_data    *data,
+                                     dxf_dim_linear_data   *edata,
+                                     const dxf_entity_attr *attr);
 
 /* Writes a radial dimension entity to the file. */
 DXF_API dxf_I32 dxf_write_dim_radial(dxf_writer_t              *w,
                                      const dxf_dimension_data  *data,
                                      const dxf_dim_radial_data *edata,
-                                     const dxf_attributes      *attr);
+                                     const dxf_entity_attr     *attr);
 
 /* Writes a diametric dimension entity to the file. */
 DXF_API dxf_I32 dxf_write_dim_diametric(dxf_writer_t                 *w,
                                         const dxf_dimension_data     *data,
                                         const dxf_dim_diametric_data *edata,
-                                        const dxf_attributes         *attr);
+                                        const dxf_entity_attr        *attr);
 
 /* Writes an angular dimension entity to the file. */
 DXF_API dxf_I32 dxf_write_dim_angular2L(dxf_writer_t                 *w,
                                         const dxf_dimension_data     *data,
                                         const dxf_dim_angular2L_data *edata,
-                                        const dxf_attributes         *attr);
+                                        const dxf_entity_attr        *attr);
 
 /* Writes an angular dimension entity (3 points version) to the file. */
 DXF_API dxf_I32 dxf_write_dim_angular3P(dxf_writer_t                 *w,
                                         const dxf_dimension_data     *data,
                                         const dxf_dim_angular3P_data *edata,
-                                        const dxf_attributes         *attr);
+                                        const dxf_entity_attr        *attr);
 
 /* Writes an ordinate dimension entity to the file. */
 DXF_API dxf_I32 dxf_write_dim_ordinate(dxf_writer_t                *w,
                                        const dxf_dimension_data    *data,
                                        const dxf_dim_ordinate_data *edata,
-                                       const dxf_attributes        *attr);
+                                       const dxf_entity_attr       *attr);
 
 /* Writes a leader entity to the file. */
 DXF_API dxf_I32 dxf_write_leader(dxf_writer_t          *w,
                                  const dxf_leader_data *data,
-                                 const dxf_attributes  *attr);
-
-/* Writes a single vertex of a leader to the file. */
-DXF_API dxf_I32 dxf_write_leader_vertex(dxf_writer_t                 *w,
-                                        const dxf_leader_vertex_data *data);
+                                 const dxf_entity_attr *attr);
 
 /* Writes leader end to the file. */
 DXF_API dxf_I32 dxf_write_leader_end(dxf_writer_t *w, const dxf_leader_data *data);
 
 /* Writes the beginning of a hatch entity to the file. This must be followed by one or
  * more writeHatchLoop() calls and a writeHatch2() call.*/
-DXF_API dxf_I32 dxf_write_hatch1(dxf_writer_t         *w,
-                                 const dxf_hatch_data *data,
-                                 const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_hatch1(dxf_writer_t          *w,
+                                 const dxf_hatch_data  *data,
+                                 const dxf_entity_attr *attr);
 
 /* Writes the end of a hatch entity to the file. */
-DXF_API dxf_I32 dxf_write_hatch2(dxf_writer_t         *w,
-                                 const dxf_hatch_data *data,
-                                 const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_hatch2(dxf_writer_t          *w,
+                                 const dxf_hatch_data  *data,
+                                 const dxf_entity_attr *attr);
 
 /* Writes the beginning of a hatch loop to the file. This must happen after writing the
  * beginning of a hatch entity.*/
@@ -1248,9 +1252,9 @@ DXF_API dxf_I32 dxf_write_hatch_loop2(dxf_writer_t *w, const dxf_hatch_loop_data
 DXF_API dxf_I32 dxf_write_hatch_edge(dxf_writer_t *w, const dxf_hatch_edge_data *data);
 
 /* Writes an image entity.*/
-DXF_API dxf_U32 dxf_write_image(dxf_writer_t         *w,
-                                const dxf_image_data *data,
-                                const dxf_attributes *attr);
+DXF_API dxf_U32 dxf_write_image(dxf_writer_t          *w,
+                                const dxf_image_data  *data,
+                                const dxf_entity_attr *attr);
 
 /* Writes an image definition entity. */
 DXF_API dxf_I32 dxf_write_image_def(dxf_writer_t         *w,
@@ -1258,9 +1262,9 @@ DXF_API dxf_I32 dxf_write_image_def(dxf_writer_t         *w,
                                     const dxf_image_data *data);
 
 /* Writes a layer to the file. Layers are stored in the tables section of a DXF file.*/
-DXF_API dxf_I32 dxf_write_layer(dxf_writer_t         *w,
-                                const dxf_layer_data *data,
-                                const dxf_attributes *attr);
+DXF_API dxf_I32 dxf_write_layer(dxf_writer_t          *w,
+                                const dxf_layer_data  *data,
+                                const dxf_entity_attr *attr);
 
 /* Writes a line type to the file. Line types are stored in the tables section of a DXF
  * file.*/
@@ -1342,145 +1346,8 @@ DXF_API dxf_I32 dxf_write_comment(dxf_writer_t *w, const dxf_CHAR *comment);
 /*                                      dxf Reader                                      */
 /* ------------------------------------------------------------------------------------ */
 
-/* Reader callback. */
-typedef struct dxf_reader_callback_t {
-    /* Called for every code / value tuple of the DXF file. The complete DXF file contents
-     * can be handled by the implementation of this function.*/
-    void (*process_code_value_pair)(dxf_U32, dxf_CHAR *);
-    /* Called when a section (entity, table entry, etc.) is finished. */
-    void (*end_section)();
-    /* Called for every layer. */
-    void (*add_layer)(const dxf_layer_data *);
-    /* Called for every linetype. */
-    void (*add_line_type)(const dxf_line_type_data *);
-    /* Called for every dash in linetype pattern */
-    void (*add_line_type_dash)(dxf_F64);
-    /* Called for every block. Note: all entities added after this command go into this
-     * block until endBlock() is called.*/
-    void (*add_block)(const dxf_block_data *);
-    /* Called to end the current block */
-    void (*end_block)();
-    /* Called for every text style */
-    void (*add_text_style)(const dxf_style_data *);
-    /* Called for every point */
-    void (*add_point)(const dxf_point_data *);
-    /* Called for every line */
-    void (*add_line)(const dxf_line_data *);
-    /* Called for every xline */
-    void (*add_xline)(const dxf_xline_data *);
-    /* Called for every ray */
-    void (*add_ray)(const dxf_ray_data *);
-    /* Called for every arc */
-    void (*add_arc)(const dxf_arc_data *);
-    /* Called for every circle */
-    void (*add_circle)(const dxf_circle_data *);
-    /* Called for every ellipse */
-    void (*add_ellipse)(const dxf_ellipse_data *);
-    /* Called for every polyline start */
-    void (*add_polyline)(const dxf_polyline_data *);
-    /* Called for every polyline vertex */
-    void (*add_vertex)(const dxf_vertex_data *);
-    /* Called for every spline */
-    void (*add_spline)(const dxf_spline_data *);
-    /* Called for every spline control point */
-    void (*add_control_point)(const dxf_control_point_data *);
-    /* Called for every spline fit point */
-    void (*add_fit_point)(const dxf_fit_point_data *);
-    /* Called for every spline knot value */
-    void (*add_knot)(const dxf_knot_data *);
-    /* Called for every insert. */
-    void (*add_insert)(const dxf_insert_data *);
-    /* Called for every trace start */
-    void (*add_trace)(const dxf_trace_data *);
-    /* Called for every 3dface start */
-    void (*add_3d_face)(const dxf_3d_face_data *);
-    /* Called for every solid start */
-    void (*add_solid)(const dxf_3d_solid_data *);
-    /* Called for every multi Text entity. */
-    void (*add_mText)(const dxf_mText_data *);
-    /* Called for additional text chunks for MTEXT entities. The chunks come at 250
-     * character in size each. Note that those chunks come <b>before</b> the actual MTEXT
-     * entity. */
-    void (*add_mText_chunk)(const dxf_CHAR *);
-    /* Called for every text entity. */
-    void (*add_text)(const dxf_text_data *);
-    /* Called for every arc aligned text entity. */
-    void (*add_arc_aligned_text)(const dxf_arc_aligned_text_data *);
-    /* Called for every block Attribute entity. */
-    void (*add_attribute)(const dxf_attribute_data *);
-
-    /* Called for every aligned dimension entity. */
-    void (*add_dim_align)(const dxf_dimension_data *, const dxf_dim_aligned_data *);
-    /* Called for every linear or rotated dimension entity. */
-    void (*add_dim_linear)(const dxf_dimension_data *, const dxf_dim_linear_data *);
-    /* Called for every radial dimension entity. */
-    void (*add_dim_radial)(const dxf_dimension_data *, const dxf_dim_radial_data *);
-    /* Called for every diametric dimension entity. */
-    void (*add_dim_diametric)(const dxf_dimension_data *, const dxf_dim_diametric_data *);
-    /* Called for every angular dimension (2 lines version) entity. */
-    void (*add_dim_angular)(const dxf_dimension_data *, const dxf_dim_angular2L_data *);
-    /* Called for every angular dimension (3 points version) entity. */
-    void (*add_dim_angular3P)(const dxf_dimension_data *, const dxf_dim_angular3P_data *);
-    /* Called for every ordinate dimension entity. */
-    void (*add_dim_ordinate)(const dxf_dimension_data *, const dxf_dim_ordinate_data *);
-    /* Called for every leader start. */
-    void (*add_leader)(const dxf_leader_data *);
-    /* Called for every leader vertex */
-    void (*add_leader_vertex)(const dxf_leader_vertex_data *);
-    /* Called for every hatch entity. */
-    void (*add_hatch)(const dxf_hatch_data *);
-    /* Called for every image entity. */
-    void (*add_image)(const dxf_image_data *);
-    /* Called for every image definition.*/
-    void (*link_image)(const dxf_image_def_data *);
-    /* Called for every hatch loop. */
-    void (*add_hatch_loop)(const dxf_hatch_loop_data *);
-    /* Called for every hatch edge entity. */
-    void (*add_hatch_edge)(const dxf_hatch_edge_data *);
-
-    /* Called for every XRecord with the given handle. */
-    void (*add_x_record)(const dxf_CHAR *);
-    /* Called for XRecords of type string. */
-    void (*add_x_record_string)(dxf_I32, const dxf_CHAR *);
-    /* Called for XRecords of type double. */
-    void (*add_x_record_real)(dxf_I32, dxf_F64);
-    /* Called for XRecords of type int. */
-    void (*add_x_record_int)(dxf_I32, dxf_I32);
-    /* Called for XRecords of type bool. */
-    void (*add_x_record_BOOL)(dxf_I32, dxf_BOOL);
-
-    /* Called for every beginning of an XData section of the given application. */
-    void (*add_x_data_app)(const dxf_CHAR *);
-    /* Called for XData tuples. */
-    void (*add_x_data_string)(dxf_I32, const dxf_CHAR *);
-    /* Called for XData tuples. */
-    void (*add_x_data_real)(dxf_I32, dxf_F64);
-    /* Called for XData tuples. */
-    void (*add_x_data_int)(dxf_I32, dxf_I32);
-    /* Called for dictionary objects. */
-    void (*add_dictionary)(dxf_dictionary_data *);
-    /* Called for dictionary entries. */
-    void (*add_dictionary_entry)(dxf_dictionary_entry_data *);
-    /* Called after an entity has been completed. */
-    void (*end_entity)();
-
-    /* Called for every comment in the DXF file (code 999). */
-    void (*add_comment)(const dxf_CHAR *);
-
-    /* Called for every vector variable in the DXF file (e.g. "$EXTMIN"). */
-    void (*set_variable_vector)(const dxf_CHAR *, dxf_F64, dxf_F64, dxf_F64, dxf_I32);
-    /* Called for every string variable in the DXF file (e.g. "$ACADVER"). */
-    void (*set_variable_string)(const dxf_CHAR *, const dxf_CHAR *, dxf_I32);
-    /* Called for every int variable in the DXF file (e.g. "$ACADMAINTVER"). */
-    void (*set_variable_int)(const dxf_CHAR *, dxf_I32, dxf_I32);
-    /* Called for every double variable in the DXF file (e.g. "$DIMEXO"). */
-    void (*set_variable_double)(const dxf_CHAR *, dxf_F64, dxf_I32);
-    /* Called when a SEQEND occurs (when a POLYLINE or ATTRIB is done) */
-    void (*end_sequence)();
-} dxf_reader_callback_t;
-
 typedef struct dxf_document_t {
-    enum Version version;
+    Version version;
 
     dxf_CHAR polylineLayer[512];
     dxf_F64 *vertices;
@@ -1527,7 +1394,7 @@ typedef struct dxf_document_t {
     /* First call of this method. We initialize all group values in the first call. */
     dxf_BOOL firstCall;
     /* Attributes of the current entity (layer, color, width, line type) */
-    dxf_attributes attrib;
+    dxf_entity_attr attrib;
     /* library version. hex: 0x20003001 = 2.0.3.1 */
     dxf_I32 libVersion;
     /* app specific dictionary handle: */
@@ -1535,9 +1402,6 @@ typedef struct dxf_document_t {
     /* handle of standard text style, referenced by dim style: */
     dxf_U32 styleHandleStd;
 } dxf_document_t;
-
-/* Read dxf file. */
-DXF_API dxf_I32 dxf_read(const dxf_CHAR *filename, dxf_reader_callback_t *r);
 
 #ifdef __cplusplus
 }
