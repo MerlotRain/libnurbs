@@ -68,10 +68,22 @@ typedef void              *dxf_POINTER;
 /** Alias for strcasecmp() == 0 */
 #define EQUAL(a, b) (STRCASECMP(a, b) == 0)
 
-#define FALSE       0
-#define TRUE        1
-#define DXF_FAILURE -1
-#define DXF_SUCCESS 1
+#define FALSE 0
+#define TRUE  1
+
+#define ERR_NONE             1   /* No error. */
+#define ERR_UNKNOWN          -1  /* UNKNOWN. */
+#define ERR_OPEN             -2  /* error opening file. */
+#define ERR_VERSION          -3  /* unsupported version. */
+#define ERR_READ_METADATA    -4  /* error reading mata data. */
+#define ERR_READ_FILE_HEADER -5  /* error in file header read process. */
+#define ERR_READ_HEADER      -6  /* error in header vars read process. */
+#define ERR_READ_HANDLES     -7  /* error in object map read process. */
+#define ERR_READ_CLASSES     -8  /* error in classes read process. */
+#define ERR_READ_TABLES      -9  /* error in tables read process. */
+#define ERR_READ_BLOCKS      -10 /* error in block read process. */
+#define ERR_READ_ENTITIES    -11 /* error in entities read process. */
+#define ERR_READ_OBJECTS     -12 /* error in objects read process. */
 
 #define DL_DXF_MAX_STRING     1024
 #define DL_DXF_MAX_LINE       1024
@@ -102,32 +114,16 @@ typedef enum {
 
 /* Version numbers for the DXF Format. */
 typedef enum {
-    AC1006, /*!< R10. */
-    AC1009, /*!< R11 & R12. */
-    AC1012, /*!< R13. */
-    AC1014, /*!< R14. */
-    AC1015, /*!< ACAD 2000. */
-    AC1018, /*!< ACAD 2004. */
-    AC1021, /*!< ACAD 2007. */
-    AC1024, /*!< ACAD 2010. */
-    AC1027  /*!< ACAD 2013. */
+    AC1006, /* R10. */
+    AC1009, /* R11 & R12. */
+    AC1012, /* R13. */
+    AC1014, /* R14. */
+    AC1015, /* ACAD 2000. */
+    AC1018, /* ACAD 2004. */
+    AC1021, /* ACAD 2007. */
+    AC1024, /* ACAD 2010. */
+    AC1027  /* ACAD 2013. */
 } Version;
-
-typedef enum {
-    ERR_NONE,             /*!< No error. */
-    ERR_UNKNOWN,          /*!< UNKNOWN. */
-    ERR_OPEN,             /*!< error opening file. */
-    ERR_VERSION,          /*!< unsupported version. */
-    ERR_READ_METADATA,    /*!< error reading mata data. */
-    ERR_READ_FILE_HEADER, /*!< error in file header read process. */
-    ERR_READ_HEADER,      /*!< error in header vars read process. */
-    ERR_READ_HANDLES,     /*!< error in object map read process. */
-    ERR_READ_CLASSES,     /*!< error in classes read process. */
-    ERR_READ_TABLES,      /*!< error in tables read process. */
-    ERR_READ_BLOCKS,      /*!< error in block read process. */
-    ERR_READ_ENTITIES,    /*!< error in entities read process. */
-    ERR_READ_OBJECTS      /*!< error in objects read process. */
-} ErrorCode;
 
 typedef enum {
     width00      = 0,  /* 0.00mm (dxf 0)*/
@@ -172,205 +168,263 @@ typedef enum {
 // The first entry is only for direct indexing starting with [1]
 // Color 1 is red (1,0,0)
 static const dxf_F64 dxfColors[][3] = {
-#include "dxf_color.inl"
+    {0, 0, 0}, // unused
+    {1, 0, 0}, // 1
+    {1, 1, 0},
+    {0, 1, 0},
+    {0, 1, 1},
+    {0, 0, 1},
+    {1, 0, 1},
+    {1, 1, 1}, // black or white
+    {0.5, 0.5, 0.5},
+    {0.75, 0.75, 0.75},
+    {1, 0, 0}, // 10
+    {1, 0.5, 0.5},
+    {0.65, 0, 0},
+    {0.65, 0.325, 0.325},
+    {0.5, 0, 0},
+    {0.5, 0.25, 0.25},
+    {0.3, 0, 0},
+    {0.3, 0.15, 0.15},
+    {0.15, 0, 0},
+    {0.15, 0.075, 0.075},
+    {1, 0.25, 0}, // 20
+    {1, 0.625, 0.5},
+    {0.65, 0.1625, 0},
+    {0.65, 0.4063, 0.325},
+    {0.5, 0.125, 0},
+    {0.5, 0.3125, 0.25},
+    {0.3, 0.075, 0},
+    {0.3, 0.1875, 0.15},
+    {0.15, 0.0375, 0},
+    {0.15, 0.0938, 0.075},
+    {1, 0.5, 0}, // 30
+    {1, 0.75, 0.5},
+    {0.65, 0.325, 0},
+    {0.65, 0.4875, 0.325},
+    {0.5, 0.25, 0},
+    {0.5, 0.375, 0.25},
+    {0.3, 0.15, 0},
+    {0.3, 0.225, 0.15},
+    {0.15, 0.075, 0},
+    {0.15, 0.1125, 0.075},
+    {1, 0.75, 0}, // 40
+    {1, 0.875, 0.5},
+    {0.65, 0.4875, 0},
+    {0.65, 0.5688, 0.325},
+    {0.5, 0.375, 0},
+    {0.5, 0.4375, 0.25},
+    {0.3, 0.225, 0},
+    {0.3, 0.2625, 0.15},
+    {0.15, 0.1125, 0},
+    {0.15, 0.1313, 0.075},
+    {1, 1, 0}, // 50
+    {1, 1, 0.5},
+    {0.65, 0.65, 0},
+    {0.65, 0.65, 0.325},
+    {0.5, 0.5, 0},
+    {0.5, 0.5, 0.25},
+    {0.3, 0.3, 0},
+    {0.3, 0.3, 0.15},
+    {0.15, 0.15, 0},
+    {0.15, 0.15, 0.075},
+    {0.75, 1, 0}, // 60
+    {0.875, 1, 0.5},
+    {0.4875, 0.65, 0},
+    {0.5688, 0.65, 0.325},
+    {0.375, 0.5, 0},
+    {0.4375, 0.5, 0.25},
+    {0.225, 0.3, 0},
+    {0.2625, 0.3, 0.15},
+    {0.1125, 0.15, 0},
+    {0.1313, 0.15, 0.075},
+    {0.5, 1, 0}, // 70
+    {0.75, 1, 0.5},
+    {0.325, 0.65, 0},
+    {0.4875, 0.65, 0.325},
+    {0.25, 0.5, 0},
+    {0.375, 0.5, 0.25},
+    {0.15, 0.3, 0},
+    {0.225, 0.3, 0.15},
+    {0.075, 0.15, 0},
+    {0.1125, 0.15, 0.075},
+    {0.25, 1, 0}, // 80
+    {0.625, 1, 0.5},
+    {0.1625, 0.65, 0},
+    {0.4063, 0.65, 0.325},
+    {0.125, 0.5, 0},
+    {0.3125, 0.5, 0.25},
+    {0.075, 0.3, 0},
+    {0.1875, 0.3, 0.15},
+    {0.0375, 0.15, 0},
+    {0.0938, 0.15, 0.075},
+    {0, 1, 0}, // 90
+    {0.5, 1, 0.5},
+    {0, 0.65, 0},
+    {0.325, 0.65, 0.325},
+    {0, 0.5, 0},
+    {0.25, 0.5, 0.25},
+    {0, 0.3, 0},
+    {0.15, 0.3, 0.15},
+    {0, 0.15, 0},
+    {0.075, 0.15, 0.075},
+    {0, 1, 0.25}, // 100
+    {0.5, 1, 0.625},
+    {0, 0.65, 0.1625},
+    {0.325, 0.65, 0.4063},
+    {0, 0.5, 0.125},
+    {0.25, 0.5, 0.3125},
+    {0, 0.3, 0.075},
+    {0.15, 0.3, 0.1875},
+    {0, 0.15, 0.0375},
+    {0.075, 0.15, 0.0938},
+    {0, 1, 0.5}, // 110
+    {0.5, 1, 0.75},
+    {0, 0.65, 0.325},
+    {0.325, 0.65, 0.4875},
+    {0, 0.5, 0.25},
+    {0.25, 0.5, 0.375},
+    {0, 0.3, 0.15},
+    {0.15, 0.3, 0.225},
+    {0, 0.15, 0.075},
+    {0.075, 0.15, 0.1125},
+    {0, 1, 0.75}, // 120
+    {0.5, 1, 0.875},
+    {0, 0.65, 0.4875},
+    {0.325, 0.65, 0.5688},
+    {0, 0.5, 0.375},
+    {0.25, 0.5, 0.4375},
+    {0, 0.3, 0.225},
+    {0.15, 0.3, 0.2625},
+    {0, 0.15, 0.1125},
+    {0.075, 0.15, 0.1313},
+    {0, 1, 1}, // 130
+    {0.5, 1, 1},
+    {0, 0.65, 0.65},
+    {0.325, 0.65, 0.65},
+    {0, 0.5, 0.5},
+    {0.25, 0.5, 0.5},
+    {0, 0.3, 0.3},
+    {0.15, 0.3, 0.3},
+    {0, 0.15, 0.15},
+    {0.075, 0.15, 0.15},
+    {0, 0.75, 1}, // 140
+    {0.5, 0.875, 1},
+    {0, 0.4875, 0.65},
+    {0.325, 0.5688, 0.65},
+    {0, 0.375, 0.5},
+    {0.25, 0.4375, 0.5},
+    {0, 0.225, 0.3},
+    {0.15, 0.2625, 0.3},
+    {0, 0.1125, 0.15},
+    {0.075, 0.1313, 0.15},
+    {0, 0.5, 1}, // 150
+    {0.5, 0.75, 1},
+    {0, 0.325, 0.65},
+    {0.325, 0.4875, 0.65},
+    {0, 0.25, 0.5},
+    {0.25, 0.375, 0.5},
+    {0, 0.15, 0.3},
+    {0.15, 0.225, 0.3},
+    {0, 0.075, 0.15},
+    {0.075, 0.1125, 0.15},
+    {0, 0.25, 1}, // 160
+    {0.5, 0.625, 1},
+    {0, 0.1625, 0.65},
+    {0.325, 0.4063, 0.65},
+    {0, 0.125, 0.5},
+    {0.25, 0.3125, 0.5},
+    {0, 0.075, 0.3},
+    {0.15, 0.1875, 0.3},
+    {0, 0.0375, 0.15},
+    {0.075, 0.0938, 0.15},
+    {0, 0, 1}, // 170
+    {0.5, 0.5, 1},
+    {0, 0, 0.65},
+    {0.325, 0.325, 0.65},
+    {0, 0, 0.5},
+    {0.25, 0.25, 0.5},
+    {0, 0, 0.3},
+    {0.15, 0.15, 0.3},
+    {0, 0, 0.15},
+    {0.075, 0.075, 0.15},
+    {0.25, 0, 1}, // 180
+    {0.625, 0.5, 1},
+    {0.1625, 0, 0.65},
+    {0.4063, 0.325, 0.65},
+    {0.125, 0, 0.5},
+    {0.3125, 0.25, 0.5},
+    {0.075, 0, 0.3},
+    {0.1875, 0.15, 0.3},
+    {0.0375, 0, 0.15},
+    {0.0938, 0.075, 0.15},
+    {0.5, 0, 1}, // 190
+    {0.75, 0.5, 1},
+    {0.325, 0, 0.65},
+    {0.4875, 0.325, 0.65},
+    {0.25, 0, 0.5},
+    {0.375, 0.25, 0.5},
+    {0.15, 0, 0.3},
+    {0.225, 0.15, 0.3},
+    {0.075, 0, 0.15},
+    {0.1125, 0.075, 0.15},
+    {0.75, 0, 1}, // 200
+    {0.875, 0.5, 1},
+    {0.4875, 0, 0.65},
+    {0.5688, 0.325, 0.65},
+    {0.375, 0, 0.5},
+    {0.4375, 0.25, 0.5},
+    {0.225, 0, 0.3},
+    {0.2625, 0.15, 0.3},
+    {0.1125, 0, 0.15},
+    {0.1313, 0.075, 0.15},
+    {1, 0, 1}, // 210
+    {1, 0.5, 1},
+    {0.65, 0, 0.65},
+    {0.65, 0.325, 0.65},
+    {0.5, 0, 0.5},
+    {0.5, 0.25, 0.5},
+    {0.3, 0, 0.3},
+    {0.3, 0.15, 0.3},
+    {0.15, 0, 0.15},
+    {0.15, 0.075, 0.15},
+    {1, 0, 0.75}, // 220
+    {1, 0.5, 0.875},
+    {0.65, 0, 0.4875},
+    {0.65, 0.325, 0.5688},
+    {0.5, 0, 0.375},
+    {0.5, 0.25, 0.4375},
+    {0.3, 0, 0.225},
+    {0.3, 0.15, 0.2625},
+    {0.15, 0, 0.1125},
+    {0.15, 0.075, 0.1313},
+    {1, 0, 0.5}, // 230
+    {1, 0.5, 0.75},
+    {0.65, 0, 0.325},
+    {0.65, 0.325, 0.4875},
+    {0.5, 0, 0.25},
+    {0.5, 0.25, 0.375},
+    {0.3, 0, 0.15},
+    {0.3, 0.15, 0.225},
+    {0.15, 0, 0.075},
+    {0.15, 0.075, 0.1125},
+    {1, 0, 0.25}, // 240
+    {1, 0.5, 0.625},
+    {0.65, 0, 0.1625},
+    {0.65, 0.325, 0.4063},
+    {0.5, 0, 0.125},
+    {0.5, 0.25, 0.3125},
+    {0.3, 0, 0.075},
+    {0.3, 0.15, 0.1875},
+    {0.15, 0, 0.0375},
+    {0.15, 0.075, 0.0938},
+    {0.33, 0.33, 0.33}, // 250
+    {0.464, 0.464, 0.464},
+    {0.598, 0.598, 0.598},
+    {0.732, 0.732, 0.732},
+    {0.866, 0.866, 0.866},
+    {1, 1, 1} // 255
 };
-
-// DXF Group Codes:
-
-// Strings
-#define DL_STRGRP_START 0
-#define DL_STRGRP_END   9
-
-// Coordinates
-#define DL_CRDGRP_START 10
-#define DL_CRDGRP_END   19
-
-// Real values
-#define DL_RLGRP_START 38
-#define DL_RLGRP_END   59
-
-// Short integer values
-#define DL_SHOGRP_START 60
-#define DL_SHOGRP_END   79
-
-// New in Release 13,
-#define DL_SUBCLASS 100
-
-// More coordinates
-#define DL_CRD2GRP_START 210
-#define DL_CRD2GRP_END   239
-
-// Extended data strings
-#define DL_ESTRGRP_START 1000
-#define DL_ESTRGRP_END   1009
-
-// Extended data reals
-#define DL_ERLGRP_START 1010
-#define DL_ERLGRP_END   1059
-
-#define DL_Y8_COORD_CODE 28
-#define DL_Z0_COORD_CODE 30
-#define DL_Z8_COORD_CODE 38
-
-#define DL_POINT_COORD_CODE  10
-#define DL_INSERT_COORD_CODE 10
-
-#define DL_CRD2GRP_START 210
-#define DL_CRD2GRP_END   239
-
-#define DL_THICKNESS        39
-#define DL_FIRST_REAL_CODE  THICKNESS
-#define DL_LAST_REAL_CODE   59
-#define DL_FIRST_INT_CODE   60
-#define DL_ATTFLAGS_CODE    70
-#define DL_PLINE_FLAGS_CODE 70
-#define DL_LAYER_FLAGS_CODE 70
-#define DL_FLD_LEN_CODE     73 // Inside ATTRIB
-#define DL_LAST_INT_CODE    79
-#define DL_X_EXTRU_CODE     210
-#define DL_Y_EXTRU_CODE     220
-#define DL_Z_EXTRU_CODE     230
-#define DL_COMMENT_CODE     999
-
-// Start and endpoints of a line
-#define DL_LINE_START_CODE 10 // Followed by x coord
-#define DL_LINE_END_CODE   11 // Followed by x coord
-
-// Some codes used by blocks
-#define DL_BLOCK_FLAGS_CODE 70 // An dxf_I32 containing flags
-#define DL_BLOCK_BASE_CODE  10 // Origin of block definition
-#define DL_XREF_DEPENDENT   16 // If a block contains an XREF
-#define DL_XREF_RESOLVED    32 // If a XREF resolved ok
-#define DL_REFERENCED       64 // If a block is ref'd in DWG
-
-#define DL_XSCALE_CODE    41
-#define DL_YSCALE_CODE    42
-#define DL_ANGLE_CODE     50
-#define DL_INS_POINT_CODE 10 // Followed by x of ins pnt
-#define DL_NAME2_CODE     3  // Second appearance of name
-
-// Some codes used by circle entities
-#define DL_CENTER_CODE 10 // Followed by x of center
-#define DL_RADIUS_CODE 40 // Followed by radius of circle
-
-#define DL_COND_OP_CODE -4 // Conditional op,ads_sgetn
-
-// When using ads_build's you MUST use RTDXF0 instead of these
-#define DL_ENTITY_TYPE_CODE  0 // Then there is LINE, 3DFACE..
-#define DL_SES_CODE          0 // Start End String Code
-#define DL_FILE_SEP_CODE     0 // File separator
-#define DL_SOT_CODE          0 // Start Of Table
-#define DL_TEXTVAL_CODE      1
-#define DL_NAME_CODE         2
-#define DL_BLOCK_NAME_CODE   2
-#define DL_SECTION_NAME_CODE 2
-#define DL_ENT_HAND_CODE     5  // What follows is hex string
-#define DL_TXT_STYLE_CODE    7  // Inside attributes
-#define DL_LAYER_NAME_CODE   8  // What follows is layer name
-#define DL_FIRST_XCOORD_CODE 10 // Group code x of 1st coord
-#define DL_FIRST_YCOORD_CODE 20 // Group code y of 1st coord
-#define DL_FIRST_ZCOORD_CODE 30 // Group code z of 1st coord
-#define DL_L_START_CODE      10
-#define DL_L_END_CODE        11
-#define DL_TXTHI_CODE        40
-#define DL_SCALE_X_CODE      41
-#define DL_SCALE_Y_CODE      42
-#define DL_SCALE_Z_CODE      43
-#define DL_BULGE_CODE        42 // Used in PLINE vertex's for arcs
-#define DL_ROTATION_CODE     50
-#define DL_COLOUR_CODE       62 // What follows is a color dxf_I32
-#define DL_LTYPE_CODE        6  // What follows is a linetype
-
-// Attribute flags
-#define DL_ATTS_FOLLOW_CODE 66
-#define DL_ATT_TAG_CODE     2
-#define DL_ATT_VAL_CODE     1
-#define DL_ATT_FLAGS_CODE   70 // 4 1 bit flags as follows...
-#define DL_ATT_INVIS_FLAG   1
-#define DL_ATT_CONST_FLAG   2
-#define DL_ATT_VERIFY_FLAG  4 // Prompt and verify
-#define DL_ATT_PRESET_FLAG  8 // No prompt and no verify
-
-// PLINE defines
-// Flags
-#define DL_OPEN_PLINE   0x00
-#define DL_CLOSED_PLINE 0x01
-#define DL_POLYLINE3D   0x08
-#define DL_PFACE_MESH   0x40
-#define DL_PGON_MESH    0x10
-// Vertices follow entity, required in POLYLINES
-#define DL_VERTS_FOLLOW_CODE 66 // Value should always be 1
-#define DL_VERTEX_COORD_CODE 10
-
-// LAYER flags
-#define DL_FROZEN        1
-#define DL_FROZEN_BY_DEF 2
-#define DL_LOCKED        4
-#define DL_OBJECT_USED   64 // Object is ref'd in the dwg
-
-#define DL_BLOCK_EN_CODE -2 // Block entity definition
-#define DL_E_NAME        -1 // Entity name
-
-// Extended data codes
-#define DL_EXTD_SENTINEL (-3)
-#define DL_EXTD_STR      1000
-#define DL_EXTD_APP_NAME 1001
-#define DL_EXTD_CTL_STR  1002
-#define DL_EXTD_LYR_STR  1003
-#define DL_EXTD_CHUNK    1004
-#define DL_EXTD_HANDLE   1005
-#define DL_EXTD_POINT    1010
-#define DL_EXTD_POS      1011
-#define DL_EXTD_DISP     1012
-#define DL_EXTD_DIR      1013
-#define DL_EXTD_FLOAT    1040
-#define DL_EXTD_DIST     1041
-#define DL_EXTD_SCALE    1042
-#define DL_EXTD_INT16    1070
-#define DL_EXTD_INT32    1071
-
-// UCS codes for use in ads_trans
-#define DL_WCS_TRANS_CODE 0
-#define DL_UCS_TRANS_CODE 1
-#define DL_DCS_TRANS_CODE 2
-#define DL_PCS_TRANS_CODE 3
-
-#define DL_UNKNOWN               0
-#define DL_LAYER                 10
-#define DL_BLOCK                 11
-#define DL_ENDBLK                12
-#define DL_LINETYPE              13
-#define DL_STYLE                 20
-#define DL_SETTING               50
-#define DL_ENTITY_POINT          100
-#define DL_ENTITY_LINE           101
-#define DL_ENTITY_POLYLINE       102
-#define DL_ENTITY_LWPOLYLINE     103
-#define DL_ENTITY_VERTEX         104
-#define DL_ENTITY_SPLINE         105
-#define DL_ENTITY_KNOT           106
-#define DL_ENTITY_CONTROLPOINT   107
-#define DL_ENTITY_ARC            108
-#define DL_ENTITY_CIRCLE         109
-#define DL_ENTITY_ELLIPSE        110
-#define DL_ENTITY_INSERT         111
-#define DL_ENTITY_TEXT           112
-#define DL_ENTITY_MTEXT          113
-#define DL_ENTITY_DIMENSION      114
-#define DL_ENTITY_LEADER         115
-#define DL_ENTITY_HATCH          116
-#define DL_ENTITY_ATTRIB         117
-#define DL_ENTITY_IMAGE          118
-#define DL_ENTITY_IMAGEDEF       119
-#define DL_ENTITY_TRACE          120
-#define DL_ENTITY_SOLID          121
-#define DL_ENTITY_3DFACE         122
-#define DL_ENTITY_XLINE          123
-#define DL_ENTITY_RAY            124
-#define DL_ENTITY_ARCALIGNEDTEXT 125
-#define DL_ENTITY_SEQEND         126
-#define DL_XRECORD               200
-#define DL_DICTIONARY            210
 
 /* Layer Data. */
 typedef struct dxf_layer_data {
@@ -643,11 +697,11 @@ typedef struct dxf_insert_data {
 
 /* Class to handle vertex for lwpolyline entity */
 typedef struct dxf_point2d {
-    double x;           /*!< x coordinate, code 10 */
-    double y;           /*!< y coordinate, code 20 */
-    double start_width; /*!< Start width, code 40 */
-    double end_width;   /*!< End width, code 41 */
-    double bulge;       /*!< bulge, code 42 */
+    double x;           /* x coordinate, code 10 */
+    double y;           /* y coordinate, code 20 */
+    double start_width; /* Start width, code 40 */
+    double end_width;   /* End width, code 41 */
+    double bulge;       /* bulge, code 42 */
 } dxf_point2d;
 
 /* Lwpolyline Data. */
@@ -836,134 +890,86 @@ typedef struct dxf_image_data {
 
 /* Generic Dimension Data. */
 typedef struct dxf_dimension_data {
-    dxf_F64 dpx; /* X Coordinate of definition point. */
-    dxf_F64 dpy; /* Y Coordinate of definition point. */
-    dxf_F64 dpz; /* Z Coordinate of definition point. */
-    dxf_F64 mpx; /* X Coordinate of middle point of the text. */
-    dxf_F64 mpy; /* Y Coordinate of middle point of the text. */
-    dxf_F64 mpz; /* Z Coordinate of middle point of the text. */
-    /*
-     * Dimension type.
-     *
-     * 0   Rotated, horizontal, or vertical
-     * 1   Aligned
-     * 2   Angular
-     * 3   Diametric
-     * 4   Radius
-     * 5   Angular 3-point
-     * 6   Ordinate
-     * 64  Ordinate type. This is a bit value (bit 7)
-     *     used only with integer value 6. If set,
-     *     ordinate is X-type; if not set, ordinate is
-     *     Y-type
-     * 128 This is a bit value (bit 8) added to the
-     *     other group 70 values if the dimension text
-     *     has been positioned at a user-defined
-     *    location rather than at the default location
-     */
-    dxf_I32 type;
-    /*
-     * Attachment point.
-     *
-     * 1 = Top left, 2 = Top center, 3 = Top right,
-     * 4 = Middle left, 5 = Middle center, 6 = Middle right,
-     * 7 = Bottom left, 8 = Bottom center, 9 = Bottom right,
-     */
-    dxf_I32 attachmentPoint;
-    dxf_I32 lineSpacingStyle;  /* Line spacing style. 1 = at least, 2 = exact */
-    dxf_F64 lineSpacingFactor; /* Line spacing factor. 0.25 .. 4.0 */
-                               /*
-                                * Text string.
-                                *
-                                * Text string entered explicitly by user or null
-                                * or "<>" for the actual measurement or " " (one blank space).
-                                * for supressing the text.
-                                */
-    dxf_CHAR text[512];
-    dxf_CHAR style[512]; /* Dimension style (font name). */
-    dxf_F64  angle; /* Rotation angle of dimension text away from. default orientation. */
-    dxf_F64  linearFactor; /* Linear factor style override. */
-    dxf_F64  dimScale;     /* Dimension scale (dimScale) style override. */
-    dxf_BOOL arrow1Flipped;
-    dxf_BOOL arrow2Flipped;
+    dxf_I32 type;               /* Dimension type, code 70. */
+                                /* 0   Rotated, horizontal, or vertical */
+                                /* 1   Aligned */
+                                /* 2   Angular */
+                                /* 3   Diametric */
+                                /* 4   Radius */
+                                /* 5   Angular 3-point */
+                                /* 6   Ordinate */
+                                /* 64  Ordinate type. This is a bit value (bit 7) */
+                                /*     used only with integer value 6. If set, */
+                                /*     ordinate is X-type; if not set, ordinate is */
+                                /*     Y-type */
+                                /* 128 This is a bit value (bit 8) added to the */
+                                /*     other group 70 values if the dimension text */
+                                /*     has been positioned at a user-defined */
+                                /*    location rather than at the default location */
+    dxf_coord definition_point; /* definition point, code 10, 20 & 30 */
+    dxf_coord middle_point;     /* middle point of text, code 11, 21 & 31 */
+    dxf_CHAR  text[512];        /* dimension text explicitly entered by the user, code 1*/
+    dxf_CHAR  style[512];       /* Dimension style (font name), code 3 */
+    dxf_I32   align;            /* Attachment point, code 71.*/
+                                /* 1 = Top left, 2 = Top center, 3 = Top right */
+                                /* 4 = Middle left, 5 = Middle center, 6 = Middle right */
+                                /* 7 = Bottom left, 8 = Bottom center, 9 = Bottom right */
+    dxf_I32   line_style;       /* Line spacing style, code 72. 1 = at least, 2 = exact */
+    dxf_F64   line_factor;      /* Line spacing factor, code 41. 0.25 .. 4.0 */
+    dxf_F64   rot;              /* rotation angle of dimension text, code 53 */
+    dxf_coord ext_point;        /* extrusion normal vector, code 210, 220 & 230 */
 } dxf_dimension_data;
 
 /* Aligned Dimension Data. */
 typedef struct dxf_dim_aligned_data {
-    dxf_F64 epx1; /* X Coordinate of Extension point 1. */
-    dxf_F64 epy1; /* Y Coordinate of Extension point 1. */
-    dxf_F64 epz1; /* Z Coordinate of Extension point 1. */
-    dxf_F64 epx2; /* X Coordinate of Extension point 2. */
-    dxf_F64 epy2; /* Y Coordinate of Extension point 2. */
-    dxf_F64 epz2; /* Z Coordinate of Extension point 2. */
+    dxf_coord clone_point; /* insertion for clones, code 12, 22 & 32 */
+    dxf_coord def_point1;  /* definition point 1, code 13, 23 & 33 */
+    dxf_coord def_point2;  /* definition point 2, code 13, 23 & 33 */
 } dxf_dim_aligned_data;
 
 /* Linear (rotated) Dimension Data. */
 typedef struct dxf_dim_linear_data {
-    dxf_F64 dpx1;    /* X Coordinate of Extension point 1. */
-    dxf_F64 dpy1;    /* Y Coordinate of Extension point 1. */
-    dxf_F64 dpz1;    /* Z Coordinate of Extension point 1. */
-    dxf_F64 dpx2;    /* X Coordinate of Extension point 2. */
-    dxf_F64 dpy2;    /* Y Coordinate of Extension point 2. */
-    dxf_F64 dpz2;    /* Z Coordinate of Extension point 2. */
-    dxf_F64 angle;   /* Rotation angle (angle of dimension line) in degrees. */
-    dxf_F64 oblique; /* Oblique angle in degrees. */
+    dxf_coord clone_point; /* insertion for clones, code 12, 22 & 32 */
+    dxf_coord def_point1;  /* definition point 1, code 13, 23 & 33 */
+    dxf_coord def_point2;  /* definition point 2, code 13, 23 & 33 */
+    dxf_F64   angle;       /* Rotation angle (angle of dimension line) in degrees. */
+    dxf_F64   oblique;     /* Oblique angle in degrees. */
 } dxf_dim_linear_data;
 
 /* Radial Dimension Data. */
 typedef struct dxf_dim_radial_data {
-    dxf_F64 dpx;    /* X Coordinate of definition point. */
-    dxf_F64 dpy;    /* Y Coordinate of definition point. */
-    dxf_F64 dpz;    /* Z Coordinate of definition point. */
-    dxf_F64 leader; /* Leader length */
+    dxf_coord def_point; /* definition point 1, code 15, 25 & 35 */
+    dxf_F64   leader;    /* Leader length, code 40 */
 } dxf_dim_radial_data;
 
 /* Diametric Dimension Data. */
 typedef struct dxf_dim_diametric_data {
-    dxf_F64 dpx;    /* X Coordinate of definition point (DXF 15). */
-    dxf_F64 dpy;    /* Y Coordinate of definition point (DXF 25). */
-    dxf_F64 dpz;    /* Z Coordinate of definition point (DXF 35). */
-    dxf_F64 leader; /* Leader length */
+    dxf_coord def_point; /* definition point 1, code 15, 25 & 35 */
+    dxf_F64   leader;    /* Leader length, code 40 */
 } dxf_dim_diametric_data;
 
 /* Angular Dimension Data. */
 typedef struct dxf_dim_angular2L_data {
-    dxf_F64 dpx1; /* X Coordinate of definition point 1. */
-    dxf_F64 dpy1; /* Y Coordinate of definition point 1. */
-    dxf_F64 dpz1; /* Z Coordinate of definition point 1. */
-    dxf_F64 dpx2; /* X Coordinate of definition point 2. */
-    dxf_F64 dpy2; /* Y Coordinate of definition point 2. */
-    dxf_F64 dpz2; /* Z Coordinate of definition point 2. */
-    dxf_F64 dpx3; /* X Coordinate of definition point 3. */
-    dxf_F64 dpy3; /* Y Coordinate of definition point 3. */
-    dxf_F64 dpz3; /* Z Coordinate of definition point 3. */
-    dxf_F64 dpx4; /* X Coordinate of definition point 4. */
-    dxf_F64 dpy4; /* Y Coordinate of definition point 4. */
-    dxf_F64 dpz4; /* Z Coordinate of definition point 4. */
+    dxf_coord first_line1;  /* definition point line 1-1, code 13, 23 & 33 */
+    dxf_coord first_line2;  /* definition point line 1-2, code 14, 24 & 34 */
+    dxf_coord second_line1; /* definition point line 2-1, code 15, 25 & 35 */
+    dxf_coord second_line2; /* definition point line 2-1, code 10, 20 & 30 */
+    dxf_coord dim_point;    /* definition point line 1-1, code 16, 26 & 36 */
 } dxf_dim_angular2L_data;
 
 /* Angular Dimension Data (3 points version). */
 typedef struct dxf_dim_angular3P_data {
-    dxf_F64 dpx1; /* X Coordinate of definition point 1 (extension line 1 end). */
-    dxf_F64 dpy1; /* Y Coordinate of definition point 1. */
-    dxf_F64 dpz1; /* Z Coordinate of definition point 1. */
-    dxf_F64 dpx2; /* X Coordinate of definition point 2 (extension line 2 end). */
-    dxf_F64 dpy2; /* Y Coordinate of definition point 2. */
-    dxf_F64 dpz2; /* Z Coordinate of definition point 2. */
-    dxf_F64 dpx3; /* X Coordinate of definition point 3 (center). */
-    dxf_F64 dpy3; /* Y Coordinate of definition point 3. */
-    dxf_F64 dpz3; /* Z Coordinate of definition point 3. */
+    dxf_coord first_line;   /* definition point line, code 13, 23 & 33 */
+    dxf_coord second_line;  /* definition point line, code 14, 24 & 34 */
+    dxf_coord vertex_point; /* Vertex point, code 15, 25 & 35 */
+    dxf_coord dim_point;    /* Dimension definition point, code 10, 20 & 30 */
 } dxf_dim_angular3P_data;
 
 /* Ordinate Dimension Data. */
 typedef struct dxf_dim_ordinate_data {
-    dxf_F64  dpx1;  /* X Coordinate of definition point 1. */
-    dxf_F64  dpy1;  /* Y Coordinate of definition point 1. */
-    dxf_F64  dpz1;  /* Z Coordinate of definition point 1. */
-    dxf_F64  dpx2;  /* X Coordinate of definition point 2. */
-    dxf_F64  dpy2;  /* Y Coordinate of definition point 2. */
-    dxf_F64  dpz2;  /* Z Coordinate of definition point 2. */
-    dxf_BOOL xtype; /* TRUE if the dimension indicates the X-value, FALSE for Y-value */
+    dxf_coord origin_point; /* Origin definition point, code 10, 20 & 30 */
+    dxf_coord first_line;   /* Feature location point, code 13, 23 & 33 */
+    dxf_coord second_line;  /* Leader end point, code 14, 24 & 34 */
 } dxf_dim_ordinate_data;
 
 /* Leader (arrow). */
@@ -1013,15 +1019,49 @@ typedef struct dxf_viewport_data {
     double    twist_angle;     /* view twist angle, code 51 */
 } dxf_viewport_data;
 
+typedef struct dxf_Header_data {
+    int p;
+} dxf_Header_data;
+
+/* ------------------------------------------------------------------------------------ */
+/*                                      dxf Objects                                     */
+/* ------------------------------------------------------------------------------------ */
+
+typedef struct dxf_line_type_data {
+} dxf_line_type_data;
+
+typedef struct dxf_layer_data {
+} dxf_layer_data;
+
+typedef struct dxf_dim_style_data {
+} dxf_dim_style_data;
+
+typedef struct dxf_vport_data {
+} dxf_vport_data;
+
+typedef struct dxf_text_style_data {
+} dxf_text_style_data;
+
+typedef struct dxf_appid_data {
+} dxf_appid_data;
+
 /* ------------------------------------------------------------------------------------ */
 /*                                      dxf Writer                                      */
 /* ------------------------------------------------------------------------------------ */
 
 typedef struct dxf_writer_t dxf_writer_t;
 
+struct dxf_writer_t {
+    Version         version;
+    FILE           *fp;
+    dxf_BOOL        bin;
+    dxf_Header_data headerC;
+};
+
 DXF_API dxf_I32 dxf_create_writer(dxf_writer_t  **w,
                                   const dxf_CHAR *filename,
-                                  Version         version);
+                                  Version         version,
+                                  dxf_CHAR        mode);
 DXF_API dxf_I32 dxf_destroy_writer(dxf_writer_t *w);
 
 /* Must be overwritten by the implementing class to write a real value to the file. */
