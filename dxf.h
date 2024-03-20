@@ -3,6 +3,8 @@
 
 #include <dxf_config.h>
 
+#include <stdio.h>
+
 #ifdef _WIN32
 #    ifdef DXF_DYN_LINK
 #        ifdef DXF_SOURCE
@@ -425,63 +427,6 @@ static const dxf_F64 dxfColors[][3] = {
     {0.866, 0.866, 0.866},
     {1, 1, 1} // 255
 };
-
-/* Layer Data. */
-typedef struct dxf_layer_data {
-    dxf_CHAR name[512]; /* Layer name. */
-    dxf_I32  flags;     /* Layer flags. (1 = frozen, 2 = frozen by default, 4 =
-                           locked) */
-    dxf_BOOL off;       /* Layer is off */
-} dxf_layer_data;
-
-/* Line Type Data. */
-typedef struct dxf_line_type_data {
-    dxf_CHAR name[512];        /* Linetype name */
-    dxf_CHAR description[512]; /* Linetype description */
-    dxf_I32  flags;            /* Linetype flags */
-    dxf_I32  numberOfDashes;   /* Number of dashes */
-    dxf_F64  patternLength;    /* Pattern length */
-    dxf_F64 *pattern;          /* Pattern */
-} dxf_line_type_data;
-
-/* Text style data. */
-typedef struct dxf_style_data {
-    dxf_CHAR name[512];            /* Style name */
-    dxf_I32  flags;                /* Style flags */
-    dxf_F64  fixedTextHeight;      /* Fixed text height or 0 for not fixed. */
-    dxf_F64  widthFactor;          /* Width factor */
-    dxf_F64  obliqueAngle;         /* Oblique angle */
-    dxf_I32  textGenerationFlags;  /* Text generation flags */
-    dxf_F64  lastHeightUsed;       /* Last height used */
-    dxf_CHAR primaryFontFile[512]; /* Primary font file name */
-    dxf_CHAR bigFontFile[512];     /* Big font file name */
-    dxf_BOOL bold;
-    dxf_BOOL italic;
-} dxf_style_data;
-
-/* Block attribute data. */
-typedef struct dxf_attribute_data {
-    dxf_text_data text;
-    dxf_CHAR      tag[512]; /* Tag. */
-} dxf_attribute_data;
-
-/* Image Definition Data. */
-typedef struct dxf_image_def_data {
-    dxf_CHAR ref[512];  /* Reference to the image file (unique, used to refer to the image
-                       def  object). */
-    dxf_CHAR file[512]; /* Image file */
-} dxf_image_def_data;
-
-/* Dictionary data. */
-typedef struct dxf_dictionary_data {
-    dxf_CHAR handle[512];
-} dxf_dictionary_data;
-
-/* Dictionary entry data. */
-typedef struct dxf_dictionary_entry_data {
-    dxf_CHAR name[512];
-    dxf_CHAR handle[512];
-} dxf_dictionary_entry_data;
 
 /* ------------------------------------------------------------------------------------ */
 /*                                 dxf Entity Structure                                 */
@@ -1026,24 +971,148 @@ typedef struct dxf_Header_data {
 /* ------------------------------------------------------------------------------------ */
 /*                                      dxf Objects                                     */
 /* ------------------------------------------------------------------------------------ */
-
 typedef struct dxf_line_type_data {
+
+    dxf_CHAR name[256]; /* entry name, code 2 */
+    dxf_I32  flags;     /* Flags relevant to entry, code 70 */
+    dxf_CHAR desc[256]; /* descriptive string, code 3 */
+    dxf_I32  size;      /* element number, code 73 */
+    dxf_F64  length;    /* total length of pattern, code 40 */
+    dxf_F64  path[];    /* trace, point or space length sequence, code 49 */
 } dxf_line_type_data;
 
 typedef struct dxf_layer_data {
+    dxf_CHAR  name[256];           /* entry name, code 2 */
+    dxf_I32   flags;               /* Flags relevant to entry, code 70 */
+    dxf_CHAR  lineType[256];       /* line type, code 6 */
+    dxf_I32   color;               /* layer color, code 62 */
+    dxf_I32   color24;             /* 24-bit color, code 420 */
+    dxf_BOOL  plotF;               /* Plot flag, code 290 */
+    LineWidth lWeight;             /* layer linewidget, code 370 */
+    dxf_CHAR  handlePlotS[256];    /* Hard-pointer ID/handle of plotstyle, code 390 */
+    dxf_CHAR handleMaterialS[256]; /* Hard-pointer ID/handle of materialstyle, code 347 */
+    // extData
 } dxf_layer_data;
 
 typedef struct dxf_dim_style_data {
+    // V12
+    dxf_CHAR name[256];      /* entry name, code 2 */
+    dxf_I32  flags;          /* Flags relevant to entry, code 70 */
+    dxf_CHAR dimpost[256];   /* code 3 */
+    dxf_CHAR dimapost[256];  /* code 4 */
+                             /* handle are code 105 */
+    dxf_CHAR dimblk[256];    /* code 5, code 342 V2000+ */
+    dxf_CHAR dimblk1[256];   /* code 6, code 343 V2000+ */
+    dxf_CHAR dimblk2[256];   /* code 7, code 344 V2000+ */
+    dxf_F64  dimscale;       /* code 40 */
+    dxf_F64  dimasz;         /* code 41 */
+    dxf_F64  dimexo;         /* code 42 */
+    dxf_F64  dimdli;         /* code 43 */
+    dxf_F64  dimexe;         /* code 44 */
+    dxf_F64  dimrnd;         /* code 45 */
+    dxf_F64  dimdle;         /* code 46 */
+    dxf_F64  dimtp;          /* code 47 */
+    dxf_F64  dimtm;          /* code 48 */
+    dxf_F64  dimfxl;         /* code 49 V2007+ */
+    dxf_F64  dimtxt;         /* code 140 */
+    dxf_F64  dimcen;         /* code 141 */
+    dxf_F64  dimtsz;         /* code 142 */
+    dxf_F64  dimaltf;        /* code 143 */
+    dxf_F64  dimlfac;        /* code 144 */
+    dxf_F64  dimtvp;         /* code 145 */
+    dxf_F64  dimtfac;        /* code 146 */
+    dxf_F64  dimgap;         /* code 147 */
+    dxf_F64  dimaltrnd;      /* code 148 V2000+ */
+    dxf_I32  dimtol;         /* code 71 */
+    dxf_I32  dimlim;         /* code 72 */
+    dxf_I32  dimtih;         /* code 73 */
+    dxf_I32  dimtoh;         /* code 74 */
+    dxf_I32  dimse1;         /* code 75 */
+    dxf_I32  dimse2;         /* code 76 */
+    dxf_I32  dimtad;         /* code 77 */
+    dxf_I32  dimzin;         /* code 78 */
+    dxf_I32  dimazin;        /* code 79 V2000+ */
+    dxf_I32  dimalt;         /* code 170 */
+    dxf_I32  dimaltd;        /* code 171 */
+    dxf_I32  dimtofl;        /* code 172 */
+    dxf_I32  dimsah;         /* code 173 */
+    dxf_I32  dimtix;         /* code 174 */
+    dxf_I32  dimsoxd;        /* code 175 */
+    dxf_I32  dimclrd;        /* code 176 */
+    dxf_I32  dimclre;        /* code 177 */
+    dxf_I32  dimclrt;        /* code 178 */
+    dxf_I32  dimadec;        /* code 179 V2000+ */
+    dxf_I32  dimunit;        /* code 270 R13+ (obsolete 2000+, use dimlunit & dimfrac) */
+    dxf_I32  dimdec;         /* code 271 R13+ */
+    dxf_I32  dimtdec;        /* code 272 R13+ */
+    dxf_I32  dimaltu;        /* code 273 R13+ */
+    dxf_I32  dimalttd;       /* code 274 R13+ */
+    dxf_I32  dimaunit;       /* code 275 R13+ */
+    dxf_I32  dimfrac;        /* code 276 V2000+ */
+    dxf_I32  dimlunit;       /* code 277 V2000+ */
+    dxf_I32  dimdsep;        /* code 278 V2000+ */
+    dxf_I32  dimtmove;       /* code 279 V2000+ */
+    dxf_I32  dimjust;        /* code 280 R13+ */
+    dxf_I32  dimsd1;         /* code 281 R13+ */
+    dxf_I32  dimsd2;         /* code 282 R13+ */
+    dxf_I32  dimtolj;        /* code 283 R13+ */
+    dxf_I32  dimtzin;        /* code 284 R13+ */
+    dxf_I32  dimaltz;        /* code 285 R13+ */
+    dxf_I32  dimaltttz;      /* code 286 R13+ */
+    dxf_I32  dimfit;         /* code 287 R13+  (obsolete 2000+, use dimatfit & dimtmove)*/
+    dxf_I32  dimupt;         /* code 288 R13+ */
+    dxf_I32  dimatfit;       /* code 289 V2000+ */
+    dxf_I32  dimfxlon;       /* code 290 V2007+ */
+    dxf_CHAR dimtxsty[256];  /* code 340 R13+ */
+    dxf_CHAR dimldrblk[256]; /* code 341 V2000+ */
+    dxf_I32  dimlwd;         /* code 371 V2000+ */
+    dxf_I32  dimlwe;         /* code 372 V2000+ */
 } dxf_dim_style_data;
 
 typedef struct dxf_vport_data {
+    dxf_coord lowerLeft;    /* Lower left corner, code 10 & 20 */
+    dxf_coord UpperRight;   /* Upper right corner, code 11 & 21 */
+    dxf_coord center;       /* center point in WCS, code 12 & 22 */
+    dxf_coord snapBase;     /* snap base point in DCS, code 13 & 23 */
+    dxf_coord snapSpacing;  /* snap Spacing, code 14 & 24 */
+    dxf_coord gridSpacing;  /* grid Spacing, code 15 & 25 */
+    dxf_coord viewDir;      /* view direction from target point, code 16, 26 & 36 */
+    dxf_coord viewTarget;   /* view target point, code 17, 27 & 37 */
+    dxf_F64   height;       /* view height, code 40 */
+    dxf_F64   ratio;        /* viewport aspect ratio, code 41 */
+    dxf_F64   lensHeight;   /* lens height, code 42 */
+    dxf_F64   frontClip;    /* front clipping plane, code 43 */
+    dxf_F64   backClip;     /* back clipping plane, code 44 */
+    dxf_F64   snapAngle;    /* snap rotation angle, code 50 */
+    dxf_F64   twistAngle;   /* view twist angle, code 51 */
+    dxf_I32   viewMode;     /* view mode, code 71 */
+    dxf_I32   circleZoom;   /* circle zoom percent, code 72 */
+    dxf_I32   fastZoom;     /* fast zoom setting, code 73 */
+    dxf_I32   ucsIcon;      /* UCSICON setting, code 74 */
+    dxf_I32   snap;         /* snap on/off, code 75 */
+    dxf_I32   grid;         /* grid on/off, code 76 */
+    dxf_I32   snapStyle;    /* snap style, code 77 */
+    dxf_I32   snapIsopair;  /* snap isopair, code 78 */
+    dxf_I32   gridBehavior; /* grid behavior, code 60, undocummented */
 } dxf_vport_data;
 
-typedef struct dxf_text_style_data {
-} dxf_text_style_data;
-
 typedef struct dxf_appid_data {
+    dxf_CHAR name[256]; /* entry name, code 2 */
+    dxf_I32  flags;     /* Flags relevant to entry, code 70 */
 } dxf_appid_data;
+
+typedef struct dxf_text_style_data {
+    dxf_CHAR name[256];    /* entry name, code 2 */
+    dxf_I32  flags;        /* Flags relevant to entry, code 70 */
+    dxf_F64  height;       /* Fixed text height (0 not set), code 40 */
+    dxf_F64  width;        /* Width factor, code 41 */
+    dxf_F64  oblique;      /* Oblique angle, code 50 */
+    dxf_I32  genFlag;      /* Text generation flags, code 71 */
+    dxf_F64  lastHeight;   /* Last height used, code 42 */
+    dxf_CHAR font[256];    /* primary font file name, code 3 */
+    dxf_CHAR bigFont[256]; /* bigfont file name or blank if none, code 4 */
+    dxf_I32  fontFamily;   /* ttf font family, italic and bold flags, code 1071 */
+} dxf_text_style_data;
 
 /* ------------------------------------------------------------------------------------ */
 /*                                      dxf Writer                                      */
