@@ -833,38 +833,6 @@ typedef struct dxf_image_data {
     dxf_coord vVector; /* V-vector of a single pixel, x coordinate, code 12, 22 & 32 */
 } dxf_image_data;
 
-/* Generic Dimension Data. */
-typedef struct dxf_dimension_data {
-    dxf_I32 type;               /* Dimension type, code 70. */
-                                /* 0   Rotated, horizontal, or vertical */
-                                /* 1   Aligned */
-                                /* 2   Angular */
-                                /* 3   Diametric */
-                                /* 4   Radius */
-                                /* 5   Angular 3-point */
-                                /* 6   Ordinate */
-                                /* 64  Ordinate type. This is a bit value (bit 7) */
-                                /*     used only with integer value 6. If set, */
-                                /*     ordinate is X-type; if not set, ordinate is */
-                                /*     Y-type */
-                                /* 128 This is a bit value (bit 8) added to the */
-                                /*     other group 70 values if the dimension text */
-                                /*     has been positioned at a user-defined */
-                                /*    location rather than at the default location */
-    dxf_coord definition_point; /* definition point, code 10, 20 & 30 */
-    dxf_coord middle_point;     /* middle point of text, code 11, 21 & 31 */
-    dxf_CHAR  text[512];        /* dimension text explicitly entered by the user, code 1*/
-    dxf_CHAR  style[512];       /* Dimension style (font name), code 3 */
-    dxf_I32   align;            /* Attachment point, code 71.*/
-                                /* 1 = Top left, 2 = Top center, 3 = Top right */
-                                /* 4 = Middle left, 5 = Middle center, 6 = Middle right */
-                                /* 7 = Bottom left, 8 = Bottom center, 9 = Bottom right */
-    dxf_I32   line_style;       /* Line spacing style, code 72. 1 = at least, 2 = exact */
-    dxf_F64   line_factor;      /* Line spacing factor, code 41. 0.25 .. 4.0 */
-    dxf_F64   rot;              /* rotation angle of dimension text, code 53 */
-    dxf_coord ext_point;        /* extrusion normal vector, code 210, 220 & 230 */
-} dxf_dimension_data;
-
 /* Aligned Dimension Data. */
 typedef struct dxf_dim_aligned_data {
     dxf_coord clone_point; /* insertion for clones, code 12, 22 & 32 */
@@ -917,6 +885,48 @@ typedef struct dxf_dim_ordinate_data {
     dxf_coord second_line;  /* Leader end point, code 14, 24 & 34 */
 } dxf_dim_ordinate_data;
 
+/* Generic Dimension Data. */
+typedef struct dxf_dimension_data {
+    dxf_I32 type;               /* Dimension type, code 70. */
+                                /* 0   Rotated, horizontal, or vertical */
+                                /* 1   Aligned */
+                                /* 2   Angular */
+                                /* 3   Diametric */
+                                /* 4   Radius */
+                                /* 5   Angular 3-point */
+                                /* 6   Ordinate */
+                                /* 64  Ordinate type. This is a bit value (bit 7) */
+                                /*     used only with integer value 6. If set, */
+                                /*     ordinate is X-type; if not set, ordinate is */
+                                /*     Y-type */
+                                /* 128 This is a bit value (bit 8) added to the */
+                                /*     other group 70 values if the dimension text */
+                                /*     has been positioned at a user-defined */
+                                /*    location rather than at the default location */
+    dxf_coord definition_point; /* definition point, code 10, 20 & 30 */
+    dxf_coord middle_point;     /* middle point of text, code 11, 21 & 31 */
+    dxf_CHAR  text[512];        /* dimension text explicitly entered by the user, code 1*/
+    dxf_CHAR  style[512];       /* Dimension style (font name), code 3 */
+    dxf_I32   align;            /* Attachment point, code 71.*/
+                                /* 1 = Top left, 2 = Top center, 3 = Top right */
+                                /* 4 = Middle left, 5 = Middle center, 6 = Middle right */
+                                /* 7 = Bottom left, 8 = Bottom center, 9 = Bottom right */
+    dxf_I32   line_style;       /* Line spacing style, code 72. 1 = at least, 2 = exact */
+    dxf_F64   line_factor;      /* Line spacing factor, code 41. 0.25 .. 4.0 */
+    dxf_F64   rot;              /* rotation angle of dimension text, code 53 */
+    dxf_coord ext_point;        /* extrusion normal vector, code 210, 220 & 230 */
+
+    union {
+        dxf_dim_aligned_data   *aligned;
+        dxf_dim_linear_data    *linear;
+        dxf_dim_radial_data    *radial;
+        dxf_dim_diametric_data *diametric;
+        dxf_dim_angular2L_data *angular2L;
+        dxf_dim_angular3P_data *angular3P;
+        dxf_dim_ordinate_data  *ordinate;
+    } data;
+} dxf_dimension_data;
+
 /* Leader (arrow). */
 typedef struct dxf_leader_data {
     dxf_CHAR  style[512]; /* Dimension style name, code 3 */
@@ -963,6 +973,36 @@ typedef struct dxf_viewport_data {
     double    snap_angle;      /* Snap angle, code 50 */
     double    twist_angle;     /* view twist angle, code 51 */
 } dxf_viewport_data;
+
+typedef struct dxf_entity_data {
+    EntityType type;
+    union {
+        dxf_point_data      *point;
+        dxf_line_data       *line;
+        dxf_ray_data        *ray;
+        dxf_xline_data      *xline;
+        dxf_circle_data     *circle;
+        dxf_arc_data        *arc;
+        dxf_ellipse_data    *ellipse;
+        dxf_trace_data      *trace;
+        dxf_solid_data      *solid;
+        dxf_3d_face_data    *face;
+        dxf_block_data      *block;
+        dxf_insert_data     *insert;
+        dxf_lwpolyline_data *lwpolyline;
+        dxf_text_data       *text;
+        dxf_mText_data      *mText;
+        dxf_vertex_data     *vertex;
+        dxf_polyline_data   *polyline;
+        dxf_spline_data     *spline;
+        dxf_hatch_loop_data *hatch_loop;
+        dxf_hatch_data      *hatch;
+        dxf_image_data      *image;
+        dxf_leader_data     *leader;
+        dxf_viewport_data   *viewport;
+        dxf_dimension_data  *dimension;
+    };
+} dxf_entity_data;
 
 typedef struct dxf_Header_data {
     int p;
@@ -1281,11 +1321,6 @@ DXF_API dxf_I32 dxf_write_text(dxf_writer_t          *w,
                                const dxf_text_data   *data,
                                const dxf_entity_attr *attr);
 
-/* Writes a attribute entity to the file. */
-DXF_API dxf_I32 dxf_write_attribute(dxf_writer_t             *w,
-                                    const dxf_attribute_data *data,
-                                    const dxf_entity_attr    *attr);
-
 DXF_API dxf_I32 dxf_write_dim_style_overrides(dxf_writer_t             *w,
                                               const dxf_dimension_data *data);
 
@@ -1394,7 +1429,7 @@ DXF_API dxf_I32 dxf_write_end_block(dxf_writer_t *w, const dxf_CHAR *name);
 DXF_API dxf_I32 dxf_write_view_port(dxf_writer_t *w);
 
 /* Writes a style section. This section is needed in DL_VERSION_R13. */
-DXF_API dxf_I32 dxf_write_style(dxf_writer_t *w, const dxf_style_data *style);
+DXF_API dxf_I32 dxf_write_style(dxf_writer_t *w, const dxf_dim_style_data *style);
 
 /* Writes a view section. This section is needed in DL_VERSION_R13. Note that this method
  * currently only writes a faked VIEW section to make the file readable by Aut*cad.*/
