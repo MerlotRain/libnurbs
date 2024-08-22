@@ -51,6 +51,7 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# VSCode
 build
 .cache
+.vscode/launch.json
+Testing
