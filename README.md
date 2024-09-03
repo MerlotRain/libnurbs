@@ -1,8 +1,8 @@
-# TC
+# libCADShape
 
 ----
 
-TC is a 2D CAD data algorithm library
+libCADShape is a 2D CAD data algorithm library
 
 ## Build Status
 
