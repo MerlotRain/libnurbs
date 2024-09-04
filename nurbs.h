@@ -39,14 +39,17 @@
 #define NURBS_GEOM_ELLIPSEARC   5
 #define NURBS_GEOM_LINE         6
 
-/* 
- Nurbs data
-*/
+
 typedef struct {
     double x;
     double y;
     double z;
 } nurbs_Point;
+
+typedef struct {
+    int npoints; /* number of control vertex */
+    nurbs_Point points[]; /* array of control vertex */
+} nurbs_PointArray;
 
 typedef struct {
     double x;
@@ -65,24 +68,41 @@ typedef struct {
 } nurbs_Ray;
 
 typedef struct {
-    uint8_t degree;
-    uint32_t ncv;
-    uint32_t nknots;
-    nurbs_Point* cv;
-    double* knots;
+    uint8_t degree; /* degree of curve */
+    uint32_t nknots; /* number of nondecreasing knot values */
+    double* knots; /* array of nondecreasing knot values */
+    nurbs_PointArray* cv; /* control vertex */
 } nurbs_CurveData;
 
 typedef struct {
-    uint8_t degreeU;
-    uint8_t degreeV;
-    uint32_t ncv;
-    nurbs_Point* cv;
-    double* knotsU;
-    double* knotsV;
-    uint32_t npointsU;
-    uint32_t npointsV;
+    uint8_t degreeU; /* degree of surface in u direction */
+    uint8_t degreeV; /* degree of surface in v direction */
+    double* knotsU; /* array of nondecreasing knot values in u direction */
+    double* knotsV; /* array of nondecreasing knot values in v direction */
+    uint32_t npointsU; /* number of knot values in u direction */
+    uint32_t npointsV; /* number of knot values in v direction */
+    nurbs_PointArray* cvs; /* 2d array of control points, the vertical direction (u) increases from top to bottom, the v direction from left to right, and where each control point is an array of length (dim)*/
+    int ncvs; /* number of cvs */
 } nurbs_SurfaceData;
 
+/*
+ square matrix data array
+ 2 1 0 0 1
+  |
+  |----- 
+        [1 0]
+        [0 1]
+ 3 1 0 0 0 1 0 0 0 1
+  |
+  |-----
+        [1  0  0]
+        [0  1  0]
+        [0  0  1]
+  The first tuple of the array represents the size of the matrix, 
+  so the size of the array is size * size + 1.
+  and fill the entire matrix line by line with the remaining elements.
+*/
+typedef double* nurbs_Matrix;
 
 typedef struct {
     double u;
@@ -136,6 +156,10 @@ typedef struct {
     nurbs_Point _end;
 } nurbs_Line;
 
+/**
+ * free nurbs curve
+ * \p curve curve object
+*/
 void nurbs_free(nurbs_Curve* curve);
 
 nurbs_Curve* nurbs_new_curve_withKCW(uint8_t degree, const nurbs_Point* cv, uint32_t ncv, double* knots, uint32_t nknots, double* weights, uint32_t nweights);
@@ -158,7 +182,7 @@ void nurbs_curve_reverse(nurbs_Curve* curve);
 
 void nurbs_curve_domain(const nurbs_Curve* curve, double* min, double* max);
 
-void nurbs_curve_transform(nurbs_Curve* curve, void* mat);
+void nurbs_curve_transform(nurbs_Curve* curve, nurbs_Matrix matrix);
 
 nurbs_Point nurbs_curve_point(const nurbs_Curve* curve, double u);
 
