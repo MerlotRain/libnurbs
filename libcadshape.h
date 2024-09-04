@@ -44,6 +44,8 @@ extern "C" {
 #define SHAPE_RAY        10
 #define SHAPE_COLLECTION 11
 
+// algorithm, nurbs
+
 typedef struct {
     double x;
     double y;
