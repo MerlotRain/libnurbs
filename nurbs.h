@@ -24,21 +24,20 @@
 #define NURBS_H
 
 #ifdef __cplusplus
-"C" {
+extern "C" {
 #endif
 
 #include <stdint.h>
 
-#define NURBS_TRUE              1
-#define NURBS_FALSE             0
+#define NURBS_TRUE            1
+#define NURBS_FALSE           0
 
-#define NURBS_GEOM_ARC          1
-#define NURBS_GEOM_BEZIZER      2
-#define NURBS_GEOM_CIRCLE       3
-#define NURBS_GEOM_ELLIPSE      4
-#define NURBS_GEOM_ELLIPSEARC   5
-#define NURBS_GEOM_LINE         6
-
+#define NURBS_GEOM_ARC        1
+#define NURBS_GEOM_BEZIER     2
+#define NURBS_GEOM_CIRCLE     3
+#define NURBS_GEOM_ELLIPSE    4
+#define NURBS_GEOM_ELLIPSEARC 5
+#define NURBS_GEOM_LINE       6
 
 typedef struct {
     double x;
@@ -47,7 +46,7 @@ typedef struct {
 } nurbs_Point;
 
 typedef struct {
-    int npoints; /* number of control vertex */
+    int npoints;          /* number of control vertex */
     nurbs_Point points[]; /* array of control vertex */
 } nurbs_PointArray;
 
@@ -68,28 +67,34 @@ typedef struct {
 } nurbs_Ray;
 
 typedef struct {
-    uint8_t degree; /* degree of curve */
-    uint32_t nknots; /* number of nondecreasing knot values */
-    double* knots; /* array of nondecreasing knot values */
-    nurbs_PointArray* cv; /* control vertex */
+    uint8_t degree;       /* degree of curve */
+    uint32_t nknots;      /* number of nondecreasing knot values */
+    double *knots;        /* array of nondecreasing knot values */
+    nurbs_PointArray *cv; /* control vertex */
 } nurbs_CurveData;
 
 typedef struct {
-    uint8_t degreeU; /* degree of surface in u direction */
-    uint8_t degreeV; /* degree of surface in v direction */
-    double* knotsU; /* array of nondecreasing knot values in u direction */
-    double* knotsV; /* array of nondecreasing knot values in v direction */
-    uint32_t npointsU; /* number of knot values in u direction */
-    uint32_t npointsV; /* number of knot values in v direction */
-    nurbs_PointArray* cvs; /* 2d array of control points, the vertical direction (u) increases from top to bottom, the v direction from left to right, and where each control point is an array of length (dim)*/
-    int ncvs; /* number of cvs */
+    uint8_t degreeU;       /* degree of surface in u direction */
+    uint8_t degreeV;       /* degree of surface in v direction */
+    double *knotsU;        /* array of nondecreasing knot values in u
+                              direction */
+    double *knotsV;        /* array of nondecreasing knot values in v
+                              direction */
+    uint32_t npointsU;     /* number of knot values in u direction */
+    uint32_t npointsV;     /* number of knot values in v direction */
+    nurbs_PointArray *cvs; /* 2d array of control points, the
+                              vertical direction (u) increases from
+                              top to bottom, the v direction from
+                              left to right, and where each control
+                              point is an array of length (dim)*/
+    int ncvs;              /* number of cvs */
 } nurbs_SurfaceData;
 
 /*
  square matrix data array
  2 1 0 0 1
   |
-  |----- 
+  |-----
         [1 0]
         [0 1]
  3 1 0 0 0 1 0 0 0 1
@@ -98,11 +103,11 @@ typedef struct {
         [1  0  0]
         [0  1  0]
         [0  0  1]
-  The first tuple of the array represents the size of the matrix, 
+  The first tuple of the array represents the size of the matrix,
   so the size of the array is size * size + 1.
   and fill the entire matrix line by line with the remaining elements.
 */
-typedef double* nurbs_Matrix;
+typedef double *nurbs_Matrix;
 
 typedef struct {
     double u;
@@ -117,8 +122,8 @@ typedef struct {
 /* Nurbs shapes */
 
 #define GEOM_NURBS_DATA \
-    int type;\
-    nurbs_CurveData* nurbs_data;
+    int type;           \
+    nurbs_CurveData *nurbs_data;
 
 typedef struct {
     GEOM_NURBS_DATA
@@ -127,7 +132,7 @@ typedef struct {
 typedef struct {
     GEOM_NURBS_DATA
 
-    nurbs_Point _point;
+    nurbs_Point _center;
     nurbs_Vector _xaxis;
     nurbs_Vector _yaxis;
     double _radius;
@@ -142,11 +147,11 @@ typedef struct {
 typedef struct {
     GEOM_NURBS_DATA
 
-    nurbs_Point _point;
+    nurbs_Point _center;
     nurbs_Vector _xaxis;
     nurbs_Vector _yaxis;
     double _minAngle;
-    double _maxAngle; 
+    double _maxAngle;
 } nurbs_EllipseArc, nurbs_Ellipse;
 
 typedef struct {
@@ -159,55 +164,103 @@ typedef struct {
 /**
  * free nurbs curve
  * \p curve curve object
-*/
-void nurbs_free(nurbs_Curve* curve);
+ */
+void nurbs_free(nurbs_Curve *curve);
 
-nurbs_Curve* nurbs_new_curve_withKCW(uint8_t degree, const nurbs_Point* cv, uint32_t ncv, double* knots, uint32_t nknots, double* weights, uint32_t nweights);
+/**
+ * Construct a NurbsCurve by degree, knots, control points, weights
+ * \p degree degree of curve
+ * \p cv control vertex
+ * \p ncv number of control vertex
+ * \p knots nondecreasing knot values
+ * \p nknots number of nondecreasing knot values
+ * \p weights weights of control vertex
+ * \p nweights number of weights
+ * \return nurbs curve object
+ */
+nurbs_Curve *nurbs_new_curve_withKCW(uint8_t degree, const nurbs_Point *cv,
+                                     uint32_t ncv, double *knots,
+                                     uint32_t nknots, double *weights,
+                                     uint32_t nweights);
 
-nurbs_Curve* nurbs_new_curve_withP(const nurbs_Point* cv, uint32_t ncv, uint8_t degree);
+/**
+ * Construct a NurbsCurve by interpolating a collection of points.  The
+ * resultant curve will pass through all of the points.
+ * \p cv control vertex
+ * \p ncv number of control vertex
+ * \p degree degree of curve
+ * \return nurbs curve object
+ */
+nurbs_Curve *nurbs_new_curve_withP(const nurbs_Point *cv, uint32_t ncv,
+                                   uint8_t degree);
 
-nurbs_Arc* nurbs_new_arc(const nurbs_Point center, const nurbs_Vector xaxis, const nurbs_Vector yaxis, double radius, double minAngle, double maxAngle);
+/**
+ * Constructor for Arc
+ * \p center Length center of the arc
+ * \p xaxis xaxis
+ * \p yaxis perpendicular yaxis
+ * \p radius Radius of the arc arc
+ * \p minAngle Start angle in radians
+ * \p maxAngle End angle in radians
+ */
+nurbs_Arc *nurbs_new_arc(const nurbs_Point center, const nurbs_Vector xaxis,
+                         const nurbs_Vector yaxis, double radius,
+                         double minAngle, double maxAngle);
 
-nurbs_BezierCurve* nurbs_new_bezier(const nurbs_Point* points, uint32_t npoints, double* weights, int nw);
+nurbs_BezierCurve *nurbs_new_bezier(const nurbs_Point *points, uint32_t npoints,
+                                    double *weights, int nw);
 
-nurbs_Circle* nurbs_new_circle(const nurbs_Point center, const nurbs_Vector xaxis, const nurbs_Vector yaxis, double radius);
+nurbs_Circle *nurbs_new_circle(const nurbs_Point center,
+                               const nurbs_Vector xaxis,
+                               const nurbs_Vector yaxis, double radius);
 
-nurbs_EllipseArc* nurbs_new_ellipsearc(const nurbs_Point center, const nurbs_Vector xaxis, const nurbs_Vector yaxis, double minAngle, double maxAngle);
+nurbs_EllipseArc *nurbs_new_ellipsearc(const nurbs_Point center,
+                                       const nurbs_Vector xaxis,
+                                       const nurbs_Vector yaxis,
+                                       double minAngle, double maxAngle);
 
-nurbs_Ellipse* nurbs_new_ellipse(const nurbs_Point center, const nurbs_Vector xaxis, const nurbs_Vector yaxis);
+nurbs_Ellipse *nurbs_new_ellipse(const nurbs_Point center,
+                                 const nurbs_Vector xaxis,
+                                 const nurbs_Vector yaxis);
 
-nurbs_Line* nurbs_new_line(const nurbs_Point start, const nurbs_Point end);
+nurbs_Line *nurbs_new_line(const nurbs_Point start, const nurbs_Point end);
 
-void nurbs_curve_reverse(nurbs_Curve* curve);
+void nurbs_curve_reverse(nurbs_Curve *curve);
 
-void nurbs_curve_domain(const nurbs_Curve* curve, double* min, double* max);
+void nurbs_curve_domain(const nurbs_Curve *curve, double *min, double *max);
 
-void nurbs_curve_transform(nurbs_Curve* curve, nurbs_Matrix matrix);
+void nurbs_curve_transform(nurbs_Curve *curve, nurbs_Matrix matrix);
 
-nurbs_Point nurbs_curve_point(const nurbs_Curve* curve, double u);
+nurbs_Point nurbs_curve_point(const nurbs_Curve *curve, double u);
 
-nurbs_Vector nurbs_curve_tangent(const nurbs_Curve* curve, double u);
+nurbs_Vector nurbs_curve_tangent(const nurbs_Curve *curve, double u);
 
-int nurbs_curve_derivatives(const nurbs_Curve* curve, double u, int nderives, nurbs_Vector** v, int *nv);
+int nurbs_curve_derivatives(const nurbs_Curve *curve, double u, int nderives,
+                            nurbs_Vector **v, int *nv);
 
-nurbs_Point nurbs_curve_closepoint(const nurbs_Curve* curve, const nurbs_Point point);
+nurbs_Point nurbs_curve_closepoint(const nurbs_Curve *curve,
+                                   const nurbs_Point point);
 
-double nurbs_curve_closeparam(const nurbs_Curve* curve, const nurbs_Point point);
+double nurbs_curve_closeparam(const nurbs_Curve *curve,
+                              const nurbs_Point point);
 
-double nurbs_curve_length(const nurbs_Curve* curve);
+double nurbs_curve_length(const nurbs_Curve *curve);
 
-double nurbs_curve_lengthAtParam(const nurbs_Curve* curve, double u);
+double nurbs_curve_lengthAtParam(const nurbs_Curve *curve, double u);
 
-double nurbs_curve_paramAtLength(const nurbs_Curve* curve, double len);
+double nurbs_curve_paramAtLength(const nurbs_Curve *curve, double len);
 
-int nurbs_curve_divideByEqualArcLength(const nurbs_Curve* curve, int divisions, nurbs_CurveSample** samples, int *ns);
+int nurbs_curve_divideByEqualArcLength(const nurbs_Curve *curve, int divisions,
+                                       nurbs_CurveSample **samples, int *ns);
 
-int nurbs_curve_divideByArcLength(const nurbs_Curve* curve, double arclength, nurbs_CurveSample** samples, int *ns);
+int nurbs_curve_divideByArcLength(const nurbs_Curve *curve, double arclength,
+                                  nurbs_CurveSample **samples, int *ns);
 
-int nurbs_curve_split(const nurbs_Curve* curve, double u, nurbs_Curve** curves, int *nc);
+int nurbs_curve_split(const nurbs_Curve *curve, double u, nurbs_Curve **curves,
+                      int *nc);
 
-int nurbs_curve_tessellate(const nurbs_Curve* curve, double tol, nurbs_Point** points, int *np);
-
+int nurbs_curve_tessellate(const nurbs_Curve *curve, double tol,
+                           nurbs_Point **points, int *np);
 
 #ifdef __cplusplus
 }

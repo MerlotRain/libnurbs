@@ -21,23 +21,35 @@
  */
 
 #include "nurbs_internal.h"
+#include <stddef.h>
 
-nurbs_CurveData* nurbs__makeEllipseArc(const nurbs_Point center, const nurbs_Vector xaxis, const nurbs_Vector yaxis, double minAngle, double maxAngle)
+nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
+                                       const nurbs_Vector xaxis,
+                                       const nurbs_Vector yaxis,
+                                       double minAngle, double maxAngle)
 {
     return NULL;
 }
 
-nurbs_CurveData* nurbs__makeArc(const nurbs_Point center, const nurbs_Vector xaxis, const nurbs_Vector yaxis, double radius, double minAngle, double maxAngle)
+nurbs_CurveData *nurbs__makeArc(const nurbs_Point center,
+                                const nurbs_Vector xaxis,
+                                const nurbs_Vector yaxis, double radius,
+                                double minAngle, double maxAngle)
 {
-    return nurbs__makeellipsearc(center, nurbs__Vecmul(radius, nurbs__Vecnormalized(xaxis)), nurbs__Vecmul(radius, nurbs__Vecnormalized(yaxis)), minAngle, maxAngle);
+    // return nurbs__makeellipsearc(
+    //     center, nurbs__Vecmul(radius, nurbs__Vecnormalized(xaxis)),
+    //     nurbs__Vecmul(radius, nurbs__Vecnormalized(yaxis)), minAngle,
+    //     maxAngle);
+    return NULL;
 }
 
-nurbs_CurveData* nurbs__makePolyline(const nurbs_Point* points, size_t np)
+nurbs_CurveData *nurbs__makePolyline(const nurbs_Point *points, size_t np)
 {
     return NULL;
 }
 
-nurbs_CurveData* nurbs__makeRationalBezier(const nurbs_Point* points, size_t np, double* weights, size_t nw)
+nurbs_CurveData *nurbs__makeRationalBezier(const nurbs_Point *points, size_t np,
+                                           double *weights, size_t nw)
 {
     return NULL;
 }

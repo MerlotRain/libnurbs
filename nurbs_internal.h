@@ -24,7 +24,23 @@
 #define NURBS_INTERNAL_H
 
 #include "nurbs.h"
+#include <stddef.h>
 
+/* ---------------------------------- Make ---------------------------------- */
 
+nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
+                                       const nurbs_Vector xaxis,
+                                       const nurbs_Vector yaxis,
+                                       double minAngle, double maxAngle);
+
+nurbs_CurveData *nurbs__makeArc(const nurbs_Point center,
+                                const nurbs_Vector xaxis,
+                                const nurbs_Vector yaxis, double radius,
+                                double minAngle, double maxAngle);
+
+nurbs_CurveData *nurbs__makePolyline(const nurbs_Point *points, size_t np);
+
+nurbs_CurveData *nurbs__makeRationalBezier(const nurbs_Point *points, size_t np,
+                                           double *weights, size_t nw);
 
 #endif /* NURBS_INTERNAL_H */
