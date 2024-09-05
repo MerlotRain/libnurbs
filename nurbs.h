@@ -168,7 +168,7 @@ typedef struct {
 void nurbs_free(nurbs_Curve *curve);
 
 /**
- * Construct a NurbsCurve by degree, knots, control points, weights
+ * construct a NurbsCurve by degree, knots, control points, weights
  * \p degree degree of curve
  * \p cv control vertex
  * \p ncv number of control vertex
@@ -184,7 +184,7 @@ nurbs_Curve *nurbs_new_curve_withKCW(uint8_t degree, const nurbs_Point *cv,
                                      uint32_t nweights);
 
 /**
- * Construct a NurbsCurve by interpolating a collection of points.  The
+ * construct a NurbsCurve by interpolating a collection of points.  The
  * resultant curve will pass through all of the points.
  * \p cv control vertex
  * \p ncv number of control vertex
@@ -195,44 +195,109 @@ nurbs_Curve *nurbs_new_curve_withP(const nurbs_Point *cv, uint32_t ncv,
                                    uint8_t degree);
 
 /**
- * Constructor for Arc
+ * constructor for Arc
  * \p center Length center of the arc
  * \p xaxis xaxis
  * \p yaxis perpendicular yaxis
- * \p radius Radius of the arc arc
- * \p minAngle Start angle in radians
- * \p maxAngle End angle in radians
+ * \p radius radius of the arc arc
+ * \p minAngle start angle in radians
+ * \p maxAngle end angle in radians
+ * \return nurbs arc object
  */
 nurbs_Arc *nurbs_new_arc(const nurbs_Point center, const nurbs_Vector xaxis,
                          const nurbs_Vector yaxis, double radius,
                          double minAngle, double maxAngle);
 
+/**
+ * create a bezier curve
+ * \p points array of control points
+ * \p npoints number of control points
+ * \p weights array of control point weights (optional)
+ * \p nw number of control point weights
+ * \return nurbs bezier curve object
+ */
 nurbs_BezierCurve *nurbs_new_bezier(const nurbs_Point *points, uint32_t npoints,
                                     double *weights, int nw);
 
+/**
+ * create a circle
+ * \p center center of the circle
+ * \p xaxis the xaxis
+ * \p yaxis the perpendicular yaxis
+ * \p radius radius of the circle
+ * \return nurbs circle object
+ */
 nurbs_Circle *nurbs_new_circle(const nurbs_Point center,
                                const nurbs_Vector xaxis,
                                const nurbs_Vector yaxis, double radius);
 
+/**
+ * create an EllipseArc
+ * \p center the center of the arc
+ * \p xaxis the xaxis
+ * \p yaxis the perpendicular yaxis
+ * \p minAngle minimum angle of the EllipseArc
+ * \p maxAngle maximum angle of the EllipseArc
+ * \return nurbs ellipse arc object
+ */
 nurbs_EllipseArc *nurbs_new_ellipsearc(const nurbs_Point center,
                                        const nurbs_Vector xaxis,
                                        const nurbs_Vector yaxis,
                                        double minAngle, double maxAngle);
 
+/**
+ * create an ellipse
+ * \p center the center of the arc
+ * \p xaxis the xaxis
+ * \p yaxis the perpendicular yaxis
+ * \return nurbs ellipse object
+ */
 nurbs_Ellipse *nurbs_new_ellipse(const nurbs_Point center,
                                  const nurbs_Vector xaxis,
                                  const nurbs_Vector yaxis);
 
+/**
+ * create a line
+ * \p start the start point
+ * \p end the end point
+ * \return nurbs line object
+ */
 nurbs_Line *nurbs_new_line(const nurbs_Point start, const nurbs_Point end);
 
-void nurbs_curve_reverse(nurbs_Curve *curve);
+/**
+ * everse the parameterization of the curve
+ * \p curve origion curve
+ * \return a reversed curve
+ */
+nurbs_Curve *nurbs_curve_reverse(const nurbs_Curve *curve);
 
+/**
+ * determine the valid domain of the curve
+ * \p curve curve object
+ * \p min domain min value
+ * \p max domain max value
+ */
 void nurbs_curve_domain(const nurbs_Curve *curve, double *min, double *max);
 
-void nurbs_curve_transform(nurbs_Curve *curve, nurbs_Matrix matrix);
+/**
+ * transform a curve with the given matrix.
+ * \p curve
+ * \p matrix
+ * \return 
+ */
+nurbs_Curve *nurbs_curve_transform(const nurbs_Curve *curve, nurbs_Matrix matrix);
 
+/**
+ * sample a point at the given parameter
+ * \p curve
+ * \p u
+ * \return
+ */
 nurbs_Point nurbs_curve_point(const nurbs_Curve *curve, double u);
 
+/**
+ * obtain the curve tangent at the given parameter.  This is the first derivative and is not normalized
+ */
 nurbs_Vector nurbs_curve_tangent(const nurbs_Curve *curve, double u);
 
 int nurbs_curve_derivatives(const nurbs_Curve *curve, double u, int nderives,

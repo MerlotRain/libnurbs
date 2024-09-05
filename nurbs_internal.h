@@ -43,4 +43,23 @@ nurbs_CurveData *nurbs__makePolyline(const nurbs_Point *points, size_t np);
 nurbs_CurveData *nurbs__makeRationalBezier(const nurbs_Point *points, size_t np,
                                            double *weights, size_t nw);
 
+
+/* ---------------------------------- Vec ----------------------------------- */
+
+double nurbs__vecNorm(nurbs_Vector a);
+
+double nurbs__vecNormSquared(nurbs_Vector a);
+
+nurbs_Vector nurbs__vecAdd(const nurbs_Vector v1, const nurbs_Vector v2);
+
+nurbs_Vector nurbs__vecMul(const nurbs_Vector v, double a);
+
+nurbs_Vector nurbs__vecDiv(const nurbs_Vector v, double a);
+
+nurbs_Vector nurbs__vecSub(const nurbs_Vector v1, const nurbs_Vector v2);
+
+int nurbs__vecIsZero(nurbs_Vector v);
+
+nurbs_Vector nurbs__vecNormalized(const nurbs_Vector v);
+
 #endif /* NURBS_INTERNAL_H */

@@ -170,16 +170,18 @@ nurbs_Line *nurbs_new_line(const nurbs_Point start, const nurbs_Point end)
     return line;
 }
 
-void nurbs_curve_reverse(nurbs_Curve *curve)
+nurbs_Curve *nurbs_curve_reverse(const nurbs_Curve *curve)
 {
+    return NULL;
 }
 
 void nurbs_curve_domain(const nurbs_Curve *curve, double *min, double *max)
 {
 }
 
-void nurbs_curve_transform(nurbs_Curve *curve, nurbs_Matrix mat)
+nurbs_Curve *nurbs_curve_transform(nurbs_Curve *curve, nurbs_Matrix mat)
 {
+    return NULL;
 }
 
 nurbs_Point nurbs_curve_point(const nurbs_Curve *curve, double u)
