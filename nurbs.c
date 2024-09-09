@@ -179,7 +179,7 @@ void nurbs_curve_domain(const nurbs_Curve *curve, double *min, double *max)
 {
 }
 
-nurbs_Curve *nurbs_curve_transform(nurbs_Curve *curve, nurbs_Matrix mat)
+nurbs_Curve *nurbs_curve_transform(const nurbs_Curve *curve, nurbs_Matrix mat)
 {
     return NULL;
 }
