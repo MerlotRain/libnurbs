@@ -26,6 +26,19 @@
 #include "nurbs.h"
 #include <stddef.h>
 
+#define NURBS__V2P(v) ((nurbs_Point){(v).x, (v).y, (v).z})
+#define NURBS__P2V(p) ((nurbs_Vector){(p).x, (p).y, (p).z})
+#define NURBS__ALLOCPA(n)                                  \
+    ((nurbs_PointArray *)malloc(sizeof(nurbs_PointArray) + \
+                                sizeof(nurbs_Point) * (n)))
+
+typedef struct {
+    nurbs_Point point0;
+    nurbs_Point point1;
+    float u0;
+    float u1;
+} nurbs__CurveCurveIntersection;
+
 /* ---------------------------------- Make ---------------------------------- */
 
 nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
@@ -42,7 +55,6 @@ nurbs_CurveData *nurbs__makePolyline(const nurbs_Point *points, size_t np);
 
 nurbs_CurveData *nurbs__makeRationalBezier(const nurbs_Point *points, size_t np,
                                            double *weights, size_t nw);
-
 
 /* ---------------------------------- Vec ----------------------------------- */
 
@@ -61,5 +73,7 @@ nurbs_Vector nurbs__vecSub(const nurbs_Vector v1, const nurbs_Vector v2);
 int nurbs__vecIsZero(nurbs_Vector v);
 
 nurbs_Vector nurbs__vecNormalized(const nurbs_Vector v);
+
+/* -------------------------------- Intersect ------------------------------- */
 
 #endif /* NURBS_INTERNAL_H */

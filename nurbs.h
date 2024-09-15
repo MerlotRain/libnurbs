@@ -281,49 +281,124 @@ void nurbs_curve_domain(const nurbs_Curve *curve, double *min, double *max);
 
 /**
  * transform a curve with the given matrix.
- * \p curve
- * \p matrix
- * \return 
+ * \p curve origion curve
+ * \p matrix 4x4 transformation matrix
+ * \return
  */
-nurbs_Curve *nurbs_curve_transform(const nurbs_Curve *curve, nurbs_Matrix matrix);
+nurbs_Curve *nurbs_curve_transform(const nurbs_Curve *curve,
+                                   nurbs_Matrix matrix);
 
 /**
  * sample a point at the given parameter
- * \p curve
- * \p u
+ * \p curve curve object
+ * \p u parameter
  * \return
  */
 nurbs_Point nurbs_curve_point(const nurbs_Curve *curve, double u);
 
 /**
- * obtain the curve tangent at the given parameter.  This is the first derivative and is not normalized
+ * obtain the curve tangent at the given parameter.  This is the first
+ * derivative and is not normalized
+ * \p curve curve object
+ * \p u parameter
  */
 nurbs_Vector nurbs_curve_tangent(const nurbs_Curve *curve, double u);
 
+/**
+ * get derivatives at a given parameter
+ * \param curve curve object
+ * \param u parameter
+ * \param nderives number of derivatives to obtain
+ * \param v array of vectors to store the derivatives
+ * \param nv number of vectors in the array
+ */
 int nurbs_curve_derivatives(const nurbs_Curve *curve, double u, int nderives,
                             nurbs_Vector **v, int *nv);
-
+/**
+ * determine the closest point on the curve to the given point
+ * \p curve curve object
+ * \p point point to find the closest point to
+ * \return the closest point on the curve to the given point
+ */
 nurbs_Point nurbs_curve_closepoint(const nurbs_Curve *curve,
                                    const nurbs_Point point);
 
+/**
+ * determine the closest parameter on the curve to the given point
+ * \p curve curve object
+ * \p point point to find the closest parameter to
+ * \return the closest parameter on the curve to the given point
+ */
 double nurbs_curve_closeparam(const nurbs_Curve *curve,
                               const nurbs_Point point);
 
+/**
+ * determine the length of the curve
+ * \p curve curve object
+ * \return the length of the curve
+ */
 double nurbs_curve_length(const nurbs_Curve *curve);
 
+/**
+ * determine the length of the curve at the given parameter
+ * \p curve curve object
+ * \p u parameter
+ * \return the length of the curve at the given parameter
+ */
 double nurbs_curve_lengthAtParam(const nurbs_Curve *curve, double u);
 
+/**
+ * determine the parameter at the given length
+ * \p curve curve object
+ * \p len length
+ * \return the parameter at the given length
+ */
 double nurbs_curve_paramAtLength(const nurbs_Curve *curve, double len);
 
+/**
+ * determine the parameters necessary to divide the curve into equal arc length
+ * segments
+ * \p curve curve object
+ * \p divisions number of divisions
+ * \p samples array of samples
+ * \p ns number of samples
+ * \return
+ */
 int nurbs_curve_divideByEqualArcLength(const nurbs_Curve *curve, int divisions,
                                        nurbs_CurveSample **samples, int *ns);
 
+/**
+ * given the distance to divide the curve, determine the parameters necessary to
+ * divide the curve into equal arc length segments
+ *
+ * \p curve curve object
+ * \p arclength arc length of each segment
+ * \p samples array of samples
+ * \p ns number of samples
+ * \return
+ */
 int nurbs_curve_divideByArcLength(const nurbs_Curve *curve, double arclength,
                                   nurbs_CurveSample **samples, int *ns);
 
+/**
+ * split the curve at the given parameter
+ * \p curve curve object
+ * \p u parameter
+ * \p curves array of curves
+ * \p nc number of curves
+ * \return
+ */
 int nurbs_curve_split(const nurbs_Curve *curve, double u, nurbs_Curve **curves,
                       int *nc);
 
+/**
+ * tessellate a curve at a given tolerance
+ * \p curve curve object
+ * \p tol tolerance
+ * \p points array of points
+ * \p np number of points
+ * \return
+ */
 int nurbs_curve_tessellate(const nurbs_Curve *curve, double tol,
                            nurbs_Point **points, int *np);
 

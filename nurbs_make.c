@@ -38,18 +38,18 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
     nurbs_Vector lxaxis = nurbs__vecNormalized(xaxis);
     nurbs_Vector lyaxis = nurbs__vecNormalized(yaxis);
 
-    if(maxAngle < minAngle) maxAngle = 2.0 * M_PI + minAngle;
+    if (maxAngle < minAngle)
+        maxAngle = 2.0 * M_PI + minAngle;
 
     double theta = maxAngle - minAngle;
     size_t numArcs = 0;
 
-    if(theta < M_PI_2)
+    if (theta < M_PI_2)
         numArcs = 1;
-    else
-    {
-        if(theta <= M_PI)
+    else {
+        if (theta <= M_PI)
             numArcs = 2;
-        else if(theta <= 3.0 * M_PI_2)
+        else if (theta <= 3.0 * M_PI_2)
             numArcs = 3;
         else
             numArcs = 4;
@@ -59,9 +59,8 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
     size_t n = 2 * numArcs;
     double w1 = cos(dtheta / 2);
     nurbs_Vector P0 = nurbs__vecAdd(
-        lcenter,
-        nurbs__vecAdd(nurbs__vecMul(lxaxis, xradius * cos(minAngle)),
-                      nurbs__vecMul(lyaxis, yradius * sin(minAngle))));
+        lcenter, nurbs__vecAdd(nurbs__vecMul(lxaxis, xradius * cos(minAngle)),
+                               nurbs__vecMul(lyaxis, yradius * sin(minAngle))));
     nurbs_Vector T0 = nurbs__vecSub(nurbs__vecMul(lyaxis, cos(minAngle)),
                                     nurbs__vecMul(lxaxis, sin(minAngle)));
     double *knots = (double *)calloc(2 * numArcs + 3, sizeof(double));
@@ -70,6 +69,23 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
     double angle = minAngle;
     double *weights = (double *)calloc(numArcs * 2, sizeof(double));
     assert(weights);
+    nurbs_PointArray *points = NURBS__ALLOCPA(numArcs * 2 + 1);
+    assert(points);
+    points->npoints = numArcs * 2 + 1;
+    points->points[0] = NURBS__V2P(P0);
+
+    for (int i = i; i < numArcs + 1; i++) {
+        angle += dtheta;
+        nurbs_Vector P2 = nurbs__vecAdd(
+            lcenter,
+            nurbs__vecAdd(nurbs__vecMul(lxaxis, xradius * cos(angle)),
+                          nurbs__vecMul(lyaxis, yradius * sin(angle))));
+        weights[index + 2] = 1;
+        points->points[index + 2] = NURBS__V2P(P2);
+
+        nurbs_Vector T2 = nurbs__vecSub(nurbs__vecMul(lyaxis, cos(angle)),
+                                        nurbs__vecMul(lxaxis, sin(angle)));
+    }
     return NULL;
 }
 
@@ -79,9 +95,8 @@ nurbs_CurveData *nurbs__makeArc(const nurbs_Point center,
                                 double minAngle, double maxAngle)
 {
     return nurbs__makeEllipseArc(
-            center, nurbs__vecMul(nurbs__vecNormalized(xaxis), radius),
-            nurbs__vecMul(nurbs__vecNormalized(yaxis), radius), minAngle,
-            maxAngle);
+        center, nurbs__vecMul(nurbs__vecNormalized(xaxis), radius),
+        nurbs__vecMul(nurbs__vecNormalized(yaxis), radius), minAngle, maxAngle);
 }
 
 nurbs_CurveData *nurbs__makePolyline(const nurbs_Point *points, size_t np)
