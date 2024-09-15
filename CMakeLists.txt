@@ -21,3 +21,6 @@ add_library(nurbs
     nurbs_tess.c
     nurbs_vec.c
 )
+
+
+target_compile_definitions(nurbs PUBLIC _USE_MATH_DEFINES)

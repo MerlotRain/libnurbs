@@ -73,8 +73,9 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
     assert(points);
     points->npoints = numArcs * 2 + 1;
     points->points[0] = NURBS__V2P(P0);
+    points->points[0].w = 0.0;
 
-    for (int i = i; i < numArcs + 1; i++) {
+    for (size_t i = 1; i < numArcs + 1; i++) {
         angle += dtheta;
         nurbs_Vector P2 = nurbs__vecAdd(
             lcenter,
@@ -82,11 +83,59 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
                           nurbs__vecMul(lyaxis, yradius * sin(angle))));
         weights[index + 2] = 1;
         points->points[index + 2] = NURBS__V2P(P2);
+        points->points[index + 2].w = 0.0;
 
         nurbs_Vector T2 = nurbs__vecSub(nurbs__vecMul(lyaxis, cos(angle)),
                                         nurbs__vecMul(lxaxis, sin(angle)));
+        nurbs__CurveCurveIntersection inters;
+        nurbs__intersecectRay(
+            NURBS__V2P(P0),
+            NURBS__V2P(nurbs__vecMul(T0, 1 / nurbs__vecNorm(T0))),
+            NURBS__V2P(P2),
+            NURBS__V2P(nurbs__vecMul(T2, 1 / nurbs__vecNorm(T2))), &inters);
+
+        nurbs_Vector T1 = nurbs__vecAdd(P0, nurbs__vecMul(T0, inters.u0));
+
+        weights[index + 1] = w1;
+        points->points[index + 1] = NURBS__V2P(T1);
+
+        index += 2;
+        if (i < numArcs) {
+            P0 = P2;
+            T0 = T2;
+        }
     }
-    return NULL;
+
+    size_t j = 2 * numArcs + 1;
+
+    for (size_t i = 0; i < 3; ++i) {
+        knots[i] = 0;
+        knots[i + j] = 1.0;
+    }
+
+    switch (numArcs) {
+    case 2:
+        knots[3] = knots[4] = 0.5;
+        break;
+    case 3:
+        knots[3] = knots[4] = 1.0 / 3.0;
+        knots[5] = knots[6] = 2.0 / 3.0;
+        break;
+    case 4:
+        knots[3] = knots[4] = 0.25;
+        knots[5] = knots[6] = 0.5;
+        knots[7] = knots[8] = 0.75;
+        break;
+    default:
+        break;
+    }
+
+    nurbs_CurveData *curve_data =
+        (nurbs_CurveData *)malloc(sizeof(nurbs_CurveData));
+    curve_data->degree = 2;
+    curve_data->knots = knots;
+    curve_data->cv = points;
+    return curve_data;
 }
 
 nurbs_CurveData *nurbs__makeArc(const nurbs_Point center,

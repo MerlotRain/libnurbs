@@ -21,3 +21,44 @@
  */
 
 #include "nurbs_internal.h"
+#include <math.h>
+
+int nurbs__intersecectRay_real(const nurbs_Vector a0, const nurbs_Vector a,
+                               const nurbs_Vector b0, const nurbs_Vector b,
+                               nurbs__CurveCurveIntersection *intersection)
+{
+    double dab = nurbs__vecDot(a, b);
+    double dab0 = nurbs__vecDot(a, b0);
+    double daa0 = nurbs__vecDot(a, a0);
+    double dbb0 = nurbs__vecDot(b, b0);
+    double dba0 = nurbs__vecDot(b, a0);
+    double daa = nurbs__vecDot(a, a);
+    double dbb = nurbs__vecDot(b, b);
+    double div = daa * dbb - dab * dab;
+
+    if (fabs(div) < NURBS__EPSILON) {
+        return NURBS_FALSE;
+    }
+
+    double num = dab * (dab0 - daa0) - daa * (dbb0 - dba0);
+    double w = num / div;
+    double t = (dab0 - daa0 + w * dab) / daa;
+
+    nurbs_Vector p0 = nurbs__vecOnRay(a0, a, t);
+    nurbs_Vector p1 = nurbs__vecOnRay(b0, b, w);
+    intersection->point0 = NURBS__V2P(p0);
+    intersection->point1 = NURBS__V2P(p1);
+    intersection->u0 = t;
+    intersection->u1 = w;
+
+    return NURBS_TRUE;
+}
+
+int nurbs__intersecectRay(const nurbs_Point a0, const nurbs_Point a,
+                          const nurbs_Point b0, const nurbs_Point b,
+                          nurbs__CurveCurveIntersection *intersection)
+{
+    return nurbs__intersecectRay_real(NURBS__P2V(a0), NURBS__P2V(a),
+                                      NURBS__P2V(b0), NURBS__P2V(b),
+                                      intersection);
+}
