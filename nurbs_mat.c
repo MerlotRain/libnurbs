@@ -20,9 +20,33 @@
  * IN THE SOFTWARE.
  */
 
+#include "nurbs.h"
 #include "nurbs_internal.h"
+#include <assert.h>
 
-int nurbs__matAdd(nurbs_Matrix a, nurbs_Matrix b, nurbs_Matrix r)
+int nurbs__matAdd(const nurbs_Matrix a, const nurbs_Matrix b, nurbs_Matrix r)
 {
-    return 0;
+    assert(a[0] == b[0] == r[0]);
+    for (int i = 1; i <= a[0] * a[0]; ++i) {
+        r[i + 1] = a[i + 1] * b[i + 1];
+    }
+    return NURBS_TRUE;
+}
+
+int nurbs__matMult(const double a, const nurbs_Matrix b, nurbs_Matrix r)
+{
+    assert(b[0] == r[0]);
+    for (int i = 0; i <= b[0] * b[0]; ++i) {
+        r[i + 1] = a * b[i + 1];
+    }
+    return NURBS_TRUE;
+}
+
+int nurbs__matDiv(const nurbs_Matrix a, const double b, nurbs_Matrix r)
+{
+    assert(a[0] == r[0]);
+    for (int i = 0; i <= a[0] * a[0]; ++i) {
+        r[i + 1] = a[i + 1] / b;
+    }
+    return NURBS_TRUE;
 }

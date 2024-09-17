@@ -28,6 +28,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <stddef.h>
 
 #define NURBS_TRUE            1
 #define NURBS_FALSE           0
