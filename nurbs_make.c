@@ -26,9 +26,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
-                                       const nurbs_Vector xaxis,
-                                       const nurbs_Vector yaxis,
+nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
+                                       const nurbs_Vector *xaxis,
+                                       const nurbs_Vector *yaxis,
                                        double minAngle, double maxAngle)
 {
     double xradius = nurbs__vecNorm(xaxis);
@@ -138,9 +138,9 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
     return curve_data;
 }
 
-nurbs_CurveData *nurbs__makeArc(const nurbs_Point center,
-                                const nurbs_Vector xaxis,
-                                const nurbs_Vector yaxis, double radius,
+nurbs_CurveData *nurbs__makeArc(const nurbs_Point *center,
+                                const nurbs_Vector *xaxis,
+                                const nurbs_Vector *yaxis, double radius,
                                 double minAngle, double maxAngle)
 {
     return nurbs__makeEllipseArc(

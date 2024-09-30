@@ -43,8 +43,8 @@ nurbs_Curve *nurbs_new_curve_withP(const nurbs_Point *cv, uint32_t ncv,
     return NULL;
 }
 
-nurbs_Arc *nurbs_new_arc(const nurbs_Point center, const nurbs_Vector xaxis,
-                         const nurbs_Vector yaxis, double radius,
+nurbs_Arc *nurbs_new_arc(const nurbs_Point *center, const nurbs_Vector *xaxis,
+                         const nurbs_Vector *yaxis, double radius,
                          double minAngle, double maxAngle)
 {
     nurbs_Arc *arc = (nurbs_Arc *)malloc(sizeof(nurbs_Arc));
@@ -58,9 +58,9 @@ nurbs_Arc *nurbs_new_arc(const nurbs_Point center, const nurbs_Vector xaxis,
         free(arc);
         return NULL;
     };
-    arc->_center = center;
-    arc->_xaxis = xaxis;
-    arc->_yaxis = yaxis;
+    arc->_center = *center;
+    arc->_xaxis = *xaxis;
+    arc->_yaxis = *yaxis;
     arc->_radius = radius;
     arc->_minAngle = minAngle;
     arc->_maxAngle = maxAngle;
@@ -84,9 +84,9 @@ nurbs_BezierCurve *nurbs_new_bezier(const nurbs_Point *points, uint32_t npoints,
     return bezier;
 }
 
-nurbs_Circle *nurbs_new_circle(const nurbs_Point center,
-                               const nurbs_Vector xaxis,
-                               const nurbs_Vector yaxis, double radius)
+nurbs_Circle *nurbs_new_circle(const nurbs_Point *center,
+                               const nurbs_Vector *xaxis,
+                               const nurbs_Vector *yaxis, double radius)
 {
     nurbs_Circle *circle = (nurbs_Circle *)malloc(sizeof(nurbs_Circle));
     if (circle == NULL)
@@ -98,18 +98,18 @@ nurbs_Circle *nurbs_new_circle(const nurbs_Point center,
         free(circle);
         return NULL;
     }
-    circle->_center = center;
-    circle->_xaxis = xaxis;
-    circle->_yaxis = yaxis;
+    circle->_center = *center;
+    circle->_xaxis = *xaxis;
+    circle->_yaxis = *yaxis;
     circle->_radius = radius;
     circle->_minAngle = 0.0;
     circle->_maxAngle = 2.0 * M_PI;
     return circle;
 }
 
-nurbs_EllipseArc *nurbs_new_ellipsearc(const nurbs_Point center,
-                                       const nurbs_Vector xaxis,
-                                       const nurbs_Vector yaxis,
+nurbs_EllipseArc *nurbs_new_ellipsearc(const nurbs_Point *center,
+                                       const nurbs_Vector *xaxis,
+                                       const nurbs_Vector *yaxis,
                                        double minAngle, double maxAngle)
 {
     nurbs_EllipseArc *arc =
@@ -123,17 +123,17 @@ nurbs_EllipseArc *nurbs_new_ellipsearc(const nurbs_Point center,
         free(arc);
         return NULL;
     }
-    arc->_center = center;
-    arc->_xaxis = xaxis;
-    arc->_yaxis = yaxis;
+    arc->_center = *center;
+    arc->_xaxis = *xaxis;
+    arc->_yaxis = *yaxis;
     arc->_minAngle = minAngle;
     arc->_maxAngle = maxAngle;
     return arc;
 }
 
-nurbs_Ellipse *nurbs_new_ellipse(const nurbs_Point center,
-                                 const nurbs_Vector xaxis,
-                                 const nurbs_Vector yaxis)
+nurbs_Ellipse *nurbs_new_ellipse(const nurbs_Point *center,
+                                 const nurbs_Vector *xaxis,
+                                 const nurbs_Vector *yaxis)
 {
     nurbs_Ellipse *ellipse = (nurbs_Ellipse *)malloc(sizeof(nurbs_Ellipse));
     if (ellipse == NULL)
@@ -145,28 +145,28 @@ nurbs_Ellipse *nurbs_new_ellipse(const nurbs_Point center,
         free(ellipse);
         return NULL;
     }
-    ellipse->_center = center;
-    ellipse->_xaxis = xaxis;
-    ellipse->_yaxis = yaxis;
+    ellipse->_center = *center;
+    ellipse->_xaxis = *xaxis;
+    ellipse->_yaxis = *yaxis;
     ellipse->_minAngle = 0.0;
     ellipse->_maxAngle = 2.0 * M_PI;
     return ellipse;
 }
 
-nurbs_Line *nurbs_new_line(const nurbs_Point start, const nurbs_Point end)
+nurbs_Line *nurbs_new_line(const nurbs_Point *start, const nurbs_Point *end)
 {
     nurbs_Line *line = (nurbs_Line *)malloc(sizeof(nurbs_Line));
     if (line == NULL)
         return NULL;
     line->type = NURBS_GEOM_LINE;
-    nurbs_Point points[2] = {start, end};
+    nurbs_Point points[2] = {*start, *end};
     line->nurbs_data = nurbs__makePolyline(points, 2);
     if (line->nurbs_data == NULL) {
         free(line);
         return NULL;
     }
-    line->_start = start;
-    line->_end = end;
+    line->_start = *start;
+    line->_end = *end;
     return line;
 }
 
@@ -203,13 +203,14 @@ int nurbs_curve_derivatives(const nurbs_Curve *curve, double u, int nderives,
 }
 
 nurbs_Point nurbs_curve_closepoint(const nurbs_Curve *curve,
-                                   const nurbs_Point point)
+                                   const nurbs_Point *point)
 {
     nurbs_Point p;
     return p;
 }
 
-double nurbs_curve_closeparam(const nurbs_Curve *curve, const nurbs_Point point)
+double nurbs_curve_closeparam(const nurbs_Curve *curve,
+                              const nurbs_Point *point)
 {
     return 0.0;
 }

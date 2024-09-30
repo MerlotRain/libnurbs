@@ -72,8 +72,8 @@ nurbs_Curve *nurbs_new_curve_withP(const nurbs_Point *cv, uint32_t ncv,
  * \p maxAngle end angle in radians
  * \return nurbs arc object
  */
-nurbs_Arc *nurbs_new_arc(const nurbs_Point center, const nurbs_Vector xaxis,
-                         const nurbs_Vector yaxis, double radius,
+nurbs_Arc *nurbs_new_arc(const nurbs_Point *center, const nurbs_Vector *xaxis,
+                         const nurbs_Vector *yaxis, double radius,
                          double minAngle, double maxAngle);
 
 /**
@@ -95,9 +95,9 @@ nurbs_BezierCurve *nurbs_new_bezier(const nurbs_Point *points, uint32_t npoints,
  * \p radius radius of the circle
  * \return nurbs circle object
  */
-nurbs_Circle *nurbs_new_circle(const nurbs_Point center,
-                               const nurbs_Vector xaxis,
-                               const nurbs_Vector yaxis, double radius);
+nurbs_Circle *nurbs_new_circle(const nurbs_Point *center,
+                               const nurbs_Vector *xaxis,
+                               const nurbs_Vector *yaxis, double radius);
 
 /**
  * create an EllipseArc
@@ -108,9 +108,9 @@ nurbs_Circle *nurbs_new_circle(const nurbs_Point center,
  * \p maxAngle maximum angle of the EllipseArc
  * \return nurbs ellipse arc object
  */
-nurbs_EllipseArc *nurbs_new_ellipsearc(const nurbs_Point center,
-                                       const nurbs_Vector xaxis,
-                                       const nurbs_Vector yaxis,
+nurbs_EllipseArc *nurbs_new_ellipsearc(const nurbs_Point *center,
+                                       const nurbs_Vector *xaxis,
+                                       const nurbs_Vector *yaxis,
                                        double minAngle, double maxAngle);
 
 /**
@@ -120,9 +120,9 @@ nurbs_EllipseArc *nurbs_new_ellipsearc(const nurbs_Point center,
  * \p yaxis the perpendicular yaxis
  * \return nurbs ellipse object
  */
-nurbs_Ellipse *nurbs_new_ellipse(const nurbs_Point center,
-                                 const nurbs_Vector xaxis,
-                                 const nurbs_Vector yaxis);
+nurbs_Ellipse *nurbs_new_ellipse(const nurbs_Point *center,
+                                 const nurbs_Vector *xaxis,
+                                 const nurbs_Vector *yaxis);
 
 /**
  * create a line
@@ -130,7 +130,7 @@ nurbs_Ellipse *nurbs_new_ellipse(const nurbs_Point center,
  * \p end the end point
  * \return nurbs line object
  */
-nurbs_Line *nurbs_new_line(const nurbs_Point start, const nurbs_Point end);
+nurbs_Line *nurbs_new_line(const nurbs_Point *start, const nurbs_Point *end);
 
 /**
  * everse the parameterization of the curve
@@ -189,7 +189,7 @@ int nurbs_curve_derivatives(const nurbs_Curve *curve, double u, int nderives,
  * \return the closest point on the curve to the given point
  */
 nurbs_Point nurbs_curve_closepoint(const nurbs_Curve *curve,
-                                   const nurbs_Point point);
+                                   const nurbs_Point *point);
 
 /**
  * determine the closest parameter on the curve to the given point
@@ -198,7 +198,7 @@ nurbs_Point nurbs_curve_closepoint(const nurbs_Curve *curve,
  * \return the closest parameter on the curve to the given point
  */
 double nurbs_curve_closeparam(const nurbs_Curve *curve,
-                              const nurbs_Point point);
+                              const nurbs_Point *point);
 
 /**
  * determine the length of the curve

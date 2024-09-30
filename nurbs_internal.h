@@ -48,14 +48,14 @@ typedef struct {
 
 /* ---------------------------------- Make ---------------------------------- */
 
-nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point center,
-                                       const nurbs_Vector xaxis,
-                                       const nurbs_Vector yaxis,
+nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
+                                       const nurbs_Vector *xaxis,
+                                       const nurbs_Vector *yaxis,
                                        double minAngle, double maxAngle);
 
-nurbs_CurveData *nurbs__makeArc(const nurbs_Point center,
-                                const nurbs_Vector xaxis,
-                                const nurbs_Vector yaxis, double radius,
+nurbs_CurveData *nurbs__makeArc(const nurbs_Point *center,
+                                const nurbs_Vector *xaxis,
+                                const nurbs_Vector *yaxis, double radius,
                                 double minAngle, double maxAngle);
 
 nurbs_CurveData *nurbs__makePolyline(const nurbs_Point *points, size_t np);
@@ -118,5 +118,30 @@ int nurbs__intersecectRay(const nurbs_Point a0, const nurbs_Point a,
                           nurbs__CurveCurveIntersection *intersection);
 
 /* ---------------------------------- Eval ---------------------------------- */
+
+/* ---------------------------------- Array --------------------------------- */
+
+typedef void (*array_free)(void *);
+
+typedef struct {
+    uint8_t *elts;
+    size_t size;
+    size_t nalloc;
+    size_t nelts;
+    array_free free;
+} nurbs_array_t;
+
+#define nurbs_array_elts(arr)  ((arr)->elts)
+#define nurbs_array_nelts(arr) ((arr)->nelts)
+
+int nurbs_array_init(nurbs_array_t *arr, array_free free, size_t size,
+                     size_t nalloc);
+nurbs_array_t *nurbs_array_new(array_free free, size_t size, size_t nalloc);
+void nurbs_array_destroy(nurbs_array_t *arr);
+void nurbs_array_free(nurbs_array_t *arr);
+void nurbs_array_reset(nurbs_array_t *arr);
+void *nurbs_array_push(nurbs_array_t *arr);
+void *nurbs_array_pushn(nurbs_array_t *arr, size_t n);
+void nurbs_array_pop(nurbs_array_t *arr);
 
 #endif /* NURBS_INTERNAL_H */

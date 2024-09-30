@@ -54,8 +54,9 @@ typedef struct {
 } nurbs_Vector;
 
 typedef struct {
-    size_t npoints;       /* number of control vertex */
-    nurbs_Point points[]; /* array of control vertex */
+    size_t npoints;      /* number of control vertex */
+    nurbs_Point *points; /* array of control vertex */
+    double *weights;     /* array of weights */
 } nurbs_PointArray;
 
 typedef struct {
