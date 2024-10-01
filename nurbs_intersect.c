@@ -23,10 +23,11 @@
 #include "nurbs_internal.h"
 #include <math.h>
 
-int nurbs__intersecectRay_real(const nurbs_Vector a0, const nurbs_Vector a,
-                               const nurbs_Vector b0, const nurbs_Vector b,
-                               nurbs__CurveCurveIntersection *intersection)
+int nurbs__intersecectRay(const nurbs_Point *a0, const nurbs_Point *a,
+                          const nurbs_Point *b0, const nurbs_Point *b,
+                          nurbs__CurveCurveIntersection *intersection)
 {
+
     double dab = nurbs__vecDot(a, b);
     double dab0 = nurbs__vecDot(a, b0);
     double daa0 = nurbs__vecDot(a, a0);
@@ -44,21 +45,12 @@ int nurbs__intersecectRay_real(const nurbs_Vector a0, const nurbs_Vector a,
     double w = num / div;
     double t = (dab0 - daa0 + w * dab) / daa;
 
-    nurbs_Vector p0 = nurbs__vecOnRay(a0, a, t);
-    nurbs_Vector p1 = nurbs__vecOnRay(b0, b, w);
-    intersection->point0 = NURBS__V2P(p0);
-    intersection->point1 = NURBS__V2P(p1);
+    nurbs_Point *p0 = (nurbs_Point *)nurbs__vecOnRay(a0, a, t);
+    nurbs_Point *p1 = (nurbs_Point *)nurbs__vecOnRay(b0, b, w);
+    intersection->point0 = *p0;
+    intersection->point1 = *p1;
     intersection->u0 = t;
     intersection->u1 = w;
 
     return NURBS_TRUE;
-}
-
-int nurbs__intersecectRay(const nurbs_Point a0, const nurbs_Point a,
-                          const nurbs_Point b0, const nurbs_Point b,
-                          nurbs__CurveCurveIntersection *intersection)
-{
-    return nurbs__intersecectRay_real(NURBS__P2V(a0), NURBS__P2V(a),
-                                      NURBS__P2V(b0), NURBS__P2V(b),
-                                      intersection);
 }

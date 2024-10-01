@@ -44,14 +44,7 @@ typedef struct {
     double x;
     double y;
     double z;
-    double w; /* weight */
-} nurbs_Point;
-
-typedef struct {
-    double x;
-    double y;
-    double z;
-} nurbs_Vector;
+} nurbs_Vector, nurbs_Point;
 
 typedef struct {
     size_t npoints;      /* number of control vertex */
