@@ -37,12 +37,13 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
     nurbs_Vector *lxaxis = (nurbs_Vector *)nurbs__vecNormalized(xaxis);
     nurbs_Vector *lyaxis = (nurbs_Vector *)nurbs__vecNormalized(yaxis);
 
+    // if the end angle is less than the start angle, do a circle.
     if (maxAngle < minAngle)
         maxAngle = 2.0 * M_PI + minAngle;
 
     double theta = maxAngle - minAngle;
     size_t numArcs = 0;
-
+    // how many arcs?
     if (theta < M_PI_2)
         numArcs = 1;
     else {
@@ -71,9 +72,13 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
     assert(weights);
     nurbs_PointArray *points =
         (nurbs_PointArray *)malloc(sizeof(nurbs_PointArray));
-    // malloc points and weights
-
     assert(points);
+    points->npoints = numArcs * 2 + 1;
+    points->points =
+        (nurbs_Point *)malloc(sizeof(nurbs_Point) * (numArcs * 2 + 1));
+    points->weights = (double *)malloc(sizeof(double) * (numArcs * 2 + 1));
+    assert(points->points);
+    assert(points->weights);
     points->npoints = numArcs * 2 + 1;
     points->points[0] = *P0;
 
