@@ -68,7 +68,7 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
     assert(knots);
     size_t index = 0;
     double angle = minAngle;
-    double *weights = (double *)calloc(numArcs * 2, sizeof(double));
+    double *weights = (double *)calloc(numArcs * 2 + 1, sizeof(double));
     assert(weights);
     nurbs_PointArray *points =
         (nurbs_PointArray *)malloc(sizeof(nurbs_PointArray));
@@ -76,11 +76,11 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
     points->npoints = numArcs * 2 + 1;
     points->points =
         (nurbs_Point *)malloc(sizeof(nurbs_Point) * (numArcs * 2 + 1));
-    points->weights = (double *)malloc(sizeof(double) * (numArcs * 2 + 1));
+    points->weights = NULL;
     assert(points->points);
-    assert(points->weights);
     points->npoints = numArcs * 2 + 1;
     points->points[0] = *P0;
+    weights[0] = 1.0;
 
     for (size_t i = 1; i < numArcs + 1; i++) {
         angle += dtheta;
