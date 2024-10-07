@@ -21,3 +21,28 @@
  */
 
 #include "nurbs_internal.h"
+#include <assert.h>
+#include <stdlib.h>
+
+void nurbs__evalHomogenize1d(nurbs_PointArray *pa, double *weights)
+{
+    assert(pa);
+    assert(pa->points);
+
+    if (weights == NULL) {
+        weights = (double *)malloc(pa->npoints * sizeof(double));
+        if (weights == NULL) {
+            return;
+        }
+        for (size_t i = 0; i < pa->npoints; i++) {
+            weights[i] = 1.0;
+        }
+    }
+
+    for (size_t i = 0; i < pa->npoints; i++) {
+        pa->points[i].x = pa->points[i].x * weights[i];
+        pa->points[i].y = pa->points[i].y * weights[i];
+        pa->points[i].z = pa->points[i].z * weights[i];
+    }
+    pa->weights = weights;
+}

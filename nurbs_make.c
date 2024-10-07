@@ -70,16 +70,16 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
     double angle = minAngle;
     double *weights = (double *)calloc(numArcs * 2 + 1, sizeof(double));
     assert(weights);
-    nurbs_PointArray *points =
+    nurbs_PointArray *parr =
         (nurbs_PointArray *)malloc(sizeof(nurbs_PointArray));
-    assert(points);
-    points->npoints = numArcs * 2 + 1;
-    points->points =
+    assert(parr);
+    parr->npoints = numArcs * 2 + 1;
+    parr->points =
         (nurbs_Point *)malloc(sizeof(nurbs_Point) * (numArcs * 2 + 1));
-    points->weights = NULL;
-    assert(points->points);
-    points->npoints = numArcs * 2 + 1;
-    points->points[0] = *P0;
+    parr->weights = NULL;
+    assert(parr->points);
+    parr->npoints = numArcs * 2 + 1;
+    parr->points[0] = *P0;
     weights[0] = 1.0;
 
     for (size_t i = 1; i < numArcs + 1; i++) {
@@ -88,7 +88,7 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
             center, nurbs__vecAdd(nurbs__vecMul(lxaxis, xradius * cos(angle)),
                                   nurbs__vecMul(lyaxis, yradius * sin(angle))));
         weights[index + 2] = 1;
-        points->points[index + 2] = *P2;
+        parr->points[index + 2] = *P2;
 
         nurbs_Vector *T2 =
             (nurbs_Vector *)nurbs__vecSub(nurbs__vecMul(lyaxis, cos(angle)),
@@ -105,7 +105,7 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
             (nurbs_Point *)nurbs__vecAdd(P0, nurbs__vecMul(T0, inters.u0));
 
         weights[index + 1] = w1;
-        points->points[index + 1] = *T1;
+        parr->points[index + 1] = *T1;
 
         index += 2;
         if (i < numArcs) {
@@ -142,7 +142,8 @@ nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
         (nurbs_CurveData *)malloc(sizeof(nurbs_CurveData));
     curve_data->degree = 2;
     curve_data->knots = knots;
-    curve_data->cv = points;
+    nurbs__evalHomogenize1d(parr, weights);
+    curve_data->cv = parr;
     return curve_data;
 }
 
@@ -161,7 +162,50 @@ nurbs_CurveData *nurbs__makeArc(const nurbs_Point *center,
 
 nurbs_CurveData *nurbs__makePolyline(const nurbs_Point *points, size_t np)
 {
-    return NULL;
+    // 2
+    // 0,1,2,3 -- 4 element
+    // 3
+    // 0,1,2,3,4 -- 5 element
+    assert(points && np > 1);
+    double *knots = (double *)malloc(sizeof(double) * (np + 2));
+    // 0.0 0.0 ... np - 1, np
+    //  0   1  ...  np+1 , np+2
+    assert(knots);
+
+    double lsum = 0.0;
+    knots[0] = 0.0;
+    knots[1] = 0.0;
+
+    for (int i = 0; i < np - 1; ++i) {
+        lsum += nurbs__vecDist(points[i], points[i + 1]);
+        knots[i + 2] = lsum;
+    }
+    knots[np + 1] = lsum;
+
+    for (int i = 0; i < np + 2; ++i) {
+        knots[i] /= lsum;
+    }
+
+    double *weights = (double *)malloc(sizeof(double) * np);
+    assert(weights);
+
+    for (int i = 0; i < np; ++i) {
+        weights[i] = 1.0;
+    }
+
+    nurbs_PointArray *parr =
+        (nurbs_PointArray *)malloc(sizeof(nurbs_PointArray));
+    assert(parr);
+    parr->points = points;
+    parr->npoints = np;
+
+    nurbs_CurveData *curve_data =
+        (nurbs_CurveData *)malloc(sizeof(nurbs_CurveData));
+    curve_data->degree = 1;
+    curve_data->knots = knots;
+    nurbs__evalHomogenize1d(parr, weights);
+    curve_data->cv = parr;
+    return curve_data;
 }
 
 nurbs_CurveData *nurbs__makeRationalBezier(const nurbs_Point *points, size_t np,

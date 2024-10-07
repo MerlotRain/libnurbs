@@ -98,6 +98,15 @@ int nurbs__intersecectRay(const nurbs_Point *a0, const nurbs_Point *a,
 
 /* ---------------------------------- Eval ---------------------------------- */
 
+/**
+ * \brief Transform a 1d array of points into their homogeneous equivalents
+ *
+ * \param pa The array of points
+ * \param weights The array of weights
+ * \return void
+ */
+void nurbs__evalHomogenize1d(nurbs_PointArray *pa, double *weights);
+
 /* ---------------------------------- Array --------------------------------- */
 
 typedef void (*array_free)(void *);
