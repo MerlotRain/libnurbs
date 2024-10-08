@@ -51,7 +51,7 @@ nurbs_Arc *nurbs_new_arc(const nurbs_Point *center, const nurbs_Vector *xaxis,
     if (arc == NULL)
         return NULL;
 
-    arc->type = NURBS_GEOM_ARC;
+    arc->type = NURBS_CURVE_ARC;
     arc->nurbs_data =
         nurbs__makeArc(center, xaxis, yaxis, radius, minAngle, maxAngle);
     if (arc->nurbs_data == NULL) {
@@ -74,7 +74,7 @@ nurbs_BezierCurve *nurbs_new_bezier(const nurbs_Point *points, uint32_t npoints,
         (nurbs_BezierCurve *)malloc(sizeof(nurbs_BezierCurve));
     if (bezier == NULL)
         return NULL;
-    bezier->type = NURBS_GEOM_BEZIER;
+    bezier->type = NURBS_CURVE_BEZIER;
     bezier->nurbs_data =
         nurbs__makeRationalBezier(points, npoints, weights, nw);
     if (bezier->nurbs_data == NULL) {
@@ -91,7 +91,7 @@ nurbs_Circle *nurbs_new_circle(const nurbs_Point *center,
     nurbs_Circle *circle = (nurbs_Circle *)malloc(sizeof(nurbs_Circle));
     if (circle == NULL)
         return NULL;
-    circle->type = NURBS_GEOM_CIRCLE;
+    circle->type = NURBS_CURVE_CIRCLE;
     circle->nurbs_data =
         nurbs__makeArc(center, xaxis, yaxis, radius, 0.0, 2.0 * M_PI);
     if (circle->nurbs_data == NULL) {
@@ -116,7 +116,7 @@ nurbs_EllipseArc *nurbs_new_ellipsearc(const nurbs_Point *center,
         (nurbs_EllipseArc *)malloc(sizeof(nurbs_EllipseArc));
     if (arc == NULL)
         return NULL;
-    arc->type = NURBS_GEOM_ELLIPSEARC;
+    arc->type = NURBS_CURVE_ELLIPSEARC;
     arc->nurbs_data =
         nurbs__makeEllipseArc(center, xaxis, yaxis, minAngle, maxAngle);
     if (arc->nurbs_data == NULL) {
@@ -138,7 +138,7 @@ nurbs_Ellipse *nurbs_new_ellipse(const nurbs_Point *center,
     nurbs_Ellipse *ellipse = (nurbs_Ellipse *)malloc(sizeof(nurbs_Ellipse));
     if (ellipse == NULL)
         return NULL;
-    ellipse->type = NURBS_GEOM_ELLIPSE;
+    ellipse->type = NURBS_CURVE_ELLIPSE;
     ellipse->nurbs_data =
         nurbs__makeEllipseArc(center, xaxis, yaxis, 0.0, 2.0 * M_PI);
     if (ellipse->nurbs_data == NULL) {
@@ -158,7 +158,7 @@ nurbs_Line *nurbs_new_line(const nurbs_Point *start, const nurbs_Point *end)
     nurbs_Line *line = (nurbs_Line *)malloc(sizeof(nurbs_Line));
     if (line == NULL)
         return NULL;
-    line->type = NURBS_GEOM_LINE;
+    line->type = NURBS_CURVE_LINE;
     nurbs_Point points[2] = {*start, *end};
     line->nurbs_data = nurbs__makePolyline(points, 2);
     if (line->nurbs_data == NULL) {

@@ -30,15 +30,22 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 
-#define NURBS_TRUE            1
-#define NURBS_FALSE           0
+#define NURBS_TRUE                1
+#define NURBS_FALSE               0
 
-#define NURBS_GEOM_ARC        1
-#define NURBS_GEOM_BEZIER     2
-#define NURBS_GEOM_CIRCLE     3
-#define NURBS_GEOM_ELLIPSE    4
-#define NURBS_GEOM_ELLIPSEARC 5
-#define NURBS_GEOM_LINE       6
+#define NURBS_CURVE_ARC           1
+#define NURBS_CURVE_BEZIER        2
+#define NURBS_CURVE_CIRCLE        3
+#define NURBS_CURVE_ELLIPSE       4
+#define NURBS_CURVE_ELLIPSEARC    5
+#define NURBS_CURVE_LINE          6
+
+#define NURBS_SURFACE_REVOLVED    7
+#define NURBS_SURFACE_SPHERICAL   8
+#define NURBS_SURFACE_SWEPT       9
+#define NURBS_SURFACE_CONICAL     10
+#define NURBS_SURFACE_CYLINDRICAL 11
+#define NURBS_SURFACE_EXTRUDED    12
 
 typedef struct {
     double x;
@@ -123,12 +130,12 @@ typedef struct {
 typedef struct {
     GEOM_NURBS_DATA
 
-    nurbs_Point _center;
-    nurbs_Vector _xaxis;
-    nurbs_Vector _yaxis;
-    double _radius;
-    double _minAngle;
-    double _maxAngle;
+    nurbs_Point _center; /* the center of the arc */
+    nurbs_Vector _xaxis; /* the xaxis */
+    nurbs_Vector _yaxis; /* the perpendicular yaxis */
+    double _radius;      /* radius of the arc arc */
+    double _minAngle;    /* start angle in radians */
+    double _maxAngle;    /* end angle in radians */
 } nurbs_Arc, nurbs_Circle;
 
 typedef struct {
@@ -138,19 +145,22 @@ typedef struct {
 typedef struct {
     GEOM_NURBS_DATA
 
-    nurbs_Point _center;
-    nurbs_Vector _xaxis;
-    nurbs_Vector _yaxis;
-    double _minAngle;
-    double _maxAngle;
+    nurbs_Point _center; /* the center of the arc */
+    nurbs_Vector _xaxis; /* the xaxis */
+    nurbs_Vector _yaxis; /* the perpendicular yaxis */
+    double _minAngle;    /* minimum angle of the EllipseArc */
+    double _maxAngle;    /* maximum angle of the EllipseArc */
 } nurbs_EllipseArc, nurbs_Ellipse;
 
 typedef struct {
     GEOM_NURBS_DATA
 
-    nurbs_Point _start;
-    nurbs_Point _end;
+    nurbs_Point _start; /* the start point */
+    nurbs_Point _end;   /* the end point */
 } nurbs_Line;
+
+
+
 
 #ifdef __cplusplus
 }

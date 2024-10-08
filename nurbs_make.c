@@ -175,11 +175,21 @@ nurbs_CurveData *nurbs__makePolyline(const nurbs_Point *points, size_t np)
     double lsum = 0.0;
     knots[0] = 0.0;
     knots[1] = 0.0;
+    
+    nurbs_PointArray *parr =
+        (nurbs_PointArray *)malloc(sizeof(nurbs_PointArray));
+    assert(parr);
+    parr->points =
+        (nurbs_Point *)malloc(sizeof(nurbs_Point) * np);
+    parr->npoints = np;
 
     for (int i = 0; i < np - 1; ++i) {
         lsum += nurbs__vecDist(points[i], points[i + 1]);
+        parr->points[i] = points[i];
         knots[i + 2] = lsum;
     }
+    parr->points[np - 1] = points[np - 1];
+
     knots[np + 1] = lsum;
 
     for (int i = 0; i < np + 2; ++i) {
@@ -192,12 +202,6 @@ nurbs_CurveData *nurbs__makePolyline(const nurbs_Point *points, size_t np)
     for (int i = 0; i < np; ++i) {
         weights[i] = 1.0;
     }
-
-    nurbs_PointArray *parr =
-        (nurbs_PointArray *)malloc(sizeof(nurbs_PointArray));
-    assert(parr);
-    parr->points = points;
-    parr->npoints = np;
 
     nurbs_CurveData *curve_data =
         (nurbs_CurveData *)malloc(sizeof(nurbs_CurveData));
