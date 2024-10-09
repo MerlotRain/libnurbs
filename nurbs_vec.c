@@ -23,6 +23,12 @@
 #include "nurbs_internal.h"
 #include <math.h>
 
+double nurbs__dist(const nurbs_Point *p1, const nurbs_Point *p2)
+{
+    return sqrt(pow(p1->x - p2->x, 2) + pow(p1->y - p2->y, 2) +
+                pow(p1->z - p2->z, 2));
+}
+
 double nurbs__vecNorm_(const double *v)
 {
     double norm2 = nurbs__vecNormSquared_(v);

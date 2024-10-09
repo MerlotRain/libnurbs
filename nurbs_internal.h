@@ -36,6 +36,8 @@ typedef struct {
     double u1;
 } nurbs__CurveCurveIntersection;
 
+double nurbs__dist(const nurbs_Point *p1, const nurbs_Point *p2);
+
 /* ---------------------------------- Make ---------------------------------- */
 
 nurbs_CurveData *nurbs__makeEllipseArc(const nurbs_Point *center,
